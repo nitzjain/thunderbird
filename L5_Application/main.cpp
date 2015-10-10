@@ -15,7 +15,9 @@
  *     You can reach the author of this software at :
  *          p r e e t . w i k i @ g m a i l . c o m
  */
-
+/*
+This is the android branch
+*/
 /**
  * @file
  * @brief This is the application entry point.

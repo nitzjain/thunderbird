@@ -15,10 +15,16 @@
  *     You can reach the author of this software at :
  *          p r e e t . w i k i @ g m a i l . c o m
  */
+<<<<<<< HEAD
  /*
  This is the master controller code
  */
 
+=======
+/*
+* This is the main branch
+*/
+>>>>>>> 08e073d841b177698b5a408847a2d64686006c46
 /**
  * @file
  * @brief This is the application entry point.

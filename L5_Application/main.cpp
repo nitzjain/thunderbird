@@ -16,7 +16,7 @@
  *          p r e e t . w i k i @ g m a i l . c o m
  */
  /*
- This is the motor controller code
+ This is the master controller code
  */
 
 /**

@@ -25,9 +25,12 @@ This is the gpssensor branch
  * 			@see L0_LowLevel/lpc_sys.h if you wish to override printf/scanf functions.
  *
  */
+
+#include "uart2.hpp"
 #include "tasks.hpp"
 #include "examples/examples.hpp"
 #include "stdio.h"
+#include "io.hpp"
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -42,6 +45,37 @@ This is the gpssensor branch
  *        In either case, you should avoid using this bus or interfacing to external components because
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
+
+class Gps_task: public scheduler_task
+{  private:
+        Uart2 &Gps_uart;
+
+
+    public:Gps_task(uint8_t priority):scheduler_task("Gps_task",2048,priority),
+            Gps_uart(Uart2::getInstance())
+    {
+        Gps_uart.init(9600,0,0);
+
+
+    }
+
+    double longitude,latitude;
+    bool run(void *p)
+    {
+        char rxb[100];
+
+
+                   if(!(Gps_uart.gets(rxb, sizeof(rxb),2000)))
+                   {
+                       LE.on(1);
+                   }
+                   else
+                       sscanf(rxb,"%*s,%f,%f",longitude,latitude);
+                       printf("longitude = %f\n latitude =%f \n\n", longitude,latitude);
+
+     return true ;
+    }
+};
 int main(void)
 {
     /**
@@ -55,6 +89,7 @@ int main(void)
      * control codes can be learned by typing the "learn" terminal command.
      */
     scheduler_add_task(new terminalTask(PRIORITY_HIGH));
+    scheduler_add_task(new Gps_task(PRIORITY_MEDIUM));
 
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));

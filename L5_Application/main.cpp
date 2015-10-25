@@ -25,7 +25,7 @@
  */
 #include "tasks.hpp"
 #include "examples/examples.hpp"
-
+//This is sensors
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.

@@ -28,7 +28,6 @@
 #include "command_handler.hpp"
 #include "wireless.h"
 #include "char_dev.hpp"
-#include "stdio.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 
@@ -121,23 +120,6 @@ class wirelessTask : public scheduler_task
         }
 };
 
-// test
-class Sample : public scheduler_task
-{
-    public:
-        Sample(uint8_t priority) :
-            scheduler_task("wireless", 1024, priority)
-        {
-            /* Nothing to init */
-        }
-
-        bool run(void *p)
-        {
-            printf("testing from sample class /n");
-            //wireless_service(); ///< This is a non-polling function if FreeRTOS is running.
-            return true;
-        }
-};
 
 /**
  * Periodic callback dispatcher task

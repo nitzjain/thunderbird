@@ -28,6 +28,36 @@
  */
 #include "tasks.hpp"
 #include "examples/examples.hpp"
+#include "tasks.hpp"
+#include "storage.hpp"
+#include "examples/examples.hpp"
+#include <task.h>
+#include <stdio.h>
+#include <FreeRTOS.h>
+#include <queue.h>
+#include "acceleration_sensor.hpp"
+#include "i2c2_device.hpp"
+#include "io.hpp"
+#include "utilities.h"
+#include "i2c2.hpp"
+#include "eint.h"
+#include "semphr.h"
+#include "lpc17xx.h"
+#include "soft_timer.hpp"
+#include <sys_config.h>
+#include <event_groups.h>
+#include <wireless.h>
+#include <string.h>
+#include <inttypes.h>
+#include <rtc.h>
+#include <handlers.hpp>
+#include "uart3.hpp"
+#include "uart2.hpp"
+#include "gpio.hpp"
+#include "file_logger.h"
+#include "can.h"
+#include "lpc_pwm.hpp"
+#include "switches.hpp"
 
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
@@ -43,9 +73,56 @@
  *        In either case, you should avoid using this bus or interfacing to external components because
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
+
+/** Motor Control
+ * pwm1 - Drives DC motor
+ * pwm2 - Drives servo motor
+ **/
+void button_press(void *p)
+{
+    PWM pwm1(PWM::pwm1, 50);
+    pwm1.set(7.5);
+    PWM pwm2(PWM::pwm2, 50);
+    pwm2.set(8);
+
+    while (1)
+    {
+        if (SW.getSwitch(1))
+        {
+            printf("Move forward\n");
+            pwm1.set(9);
+            delay_ms(500);
+        }
+        else if(SW.getSwitch(2))
+        {
+            printf("Move backward\n");
+            pwm1.set(6);
+            delay_ms(500);
+        }
+        else if(SW.getSwitch(3))
+        {
+            printf("Turn Right\n");
+            pwm2.set(6);
+            delay_ms(500);
+        }
+        else if(SW.getSwitch(4))
+        {
+            printf("Turn Left\n");
+            pwm2.set(9);
+            delay_ms(500);
+        }
+    }
+}
+
+
 int main(void)
 {
-    //Dheeraj checking in
+   while(1)
+    {
+        xTaskCreate(button_press, "control", 1024, 0, 1, 0);
+        vTaskStartScheduler();
+    }
+    return -1;
     /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.

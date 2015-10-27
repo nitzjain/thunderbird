@@ -1,7 +1,8 @@
 #ifndef CANPERIODICEXT_HPP
 #define CANPERIODICEXT_HPP
 
-/* Global Function Declarations */
-extern void canheartbeat(void);
+void canperiodicinit(void);
+void canheartbeat(void);
+
 
 #endif

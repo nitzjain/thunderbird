@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-
+#include "stdint.h"
 
 /**
  * Initializes the ADC Peripheral

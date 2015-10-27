@@ -25,9 +25,6 @@
  */
 #include "tasks.hpp"
 #include "examples/examples.hpp"
-#include "adc0.h"
-#include <stdio.h>
-#include "utilities.h"
 //This is sensors
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
@@ -61,7 +58,7 @@ int main(void)
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 0
+    #if 1
     scheduler_add_task(new periodicSchedulerTask());
     #endif
 
@@ -125,17 +122,6 @@ int main(void)
         u3.init(WIFI_BAUD_RATE, WIFI_RXQ_SIZE, WIFI_TXQ_SIZE);
         scheduler_add_task(new wifiTask(Uart3::getInstance(), PRIORITY_LOW));
     #endif
-        //Sample test code for 1 sensor using ADC mode
-                int r_left = 0,distance=0;
-                LPC_PINCON->PINSEL1 |= (1 << 20);
-
-                    while(1) {
-
-                        r_left = adc0_get_reading(3);
-                        distance=r_left/9.76; //Formula Used:Measured Voltages/(Input Voltage/512) i.e. reading/(5/512)
-                        printf("\nADC Reading:%d ", distance);
-                        delay_ms(1000);
-                        }
-    scheduler_start(); ///< This shouldn't return
+          scheduler_start(); ///< This shouldn't return
     return -1;
 }

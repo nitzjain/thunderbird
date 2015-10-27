@@ -78,50 +78,20 @@
  * pwm1 - Drives DC motor
  * pwm2 - Drives servo motor
  **/
-void button_press(void *p)
-{
-    PWM pwm1(PWM::pwm1, 50);
-    pwm1.set(7.5);
-    PWM pwm2(PWM::pwm2, 50);
-    pwm2.set(8);
-
-    while (1)
-    {
-        if (SW.getSwitch(1))
-        {
-            printf("Move forward\n");
-            pwm1.set(9);
-            delay_ms(500);
-        }
-        else if(SW.getSwitch(2))
-        {
-            printf("Move backward\n");
-            pwm1.set(6);
-            delay_ms(500);
-        }
-        else if(SW.getSwitch(3))
-        {
-            printf("Turn Right\n");
-            pwm2.set(6);
-            delay_ms(500);
-        }
-        else if(SW.getSwitch(4))
-        {
-            printf("Turn Left\n");
-            pwm2.set(9);
-            delay_ms(500);
-        }
-    }
-}
-
 
 int main(void)
 {
-   while(1)
-    {
-        xTaskCreate(button_press, "control", 1024, 0, 1, 0);
-        vTaskStartScheduler();
-    }
+    CAN_init(can1, 250, 1024, 1024, NULL, NULL); //initialize can bus 1
+    CAN_bypass_filter_accept_all_msgs(); //accept all messages
+    CAN_reset_bus(can1); //resets the CAN bus
+
+    PWM pwm1(PWM::pwm1, 50);
+    PWM pwm2(PWM::pwm2, 50);
+    pwm1.set(7.5);
+    pwm2.set(7.5);
+
+    scheduler_add_task(new periodicSchedulerTask());
+    scheduler_start();
     return -1;
     /**
      * A few basic tasks for this bare-bone system :

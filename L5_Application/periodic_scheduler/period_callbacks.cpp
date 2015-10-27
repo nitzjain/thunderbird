@@ -31,30 +31,64 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "can.h"
+#include "lpc_pwm.hpp"
 
-
+//CAN id's
+#define forward 0x120
+#define reverse 0x121
+#define left 0x122
+#define right 0x123
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+
+//can message id
+can_msg_t control;
+
+//Initialize PWM
+/*PWM1 - Controls the DC motor
+ *PWM2 - Controls the Servo motor
+ */
+PWM pwm1(PWM::pwm1, 50);
+PWM pwm2(PWM::pwm2, 50);
 
 
 
 void period_1Hz(void)
 {
-    LE.toggle(1);
+
 }
 
 void period_10Hz(void)
 {
-    LE.toggle(2);
+
 }
 
 void period_100Hz(void)
 {
-    LE.toggle(3);
+
+    //CAN RX Task
+    CAN_rx(can1, &control, portMAX_DELAY); //receive message to turn on the led
+    if(control.msg_id == forward)
+    {
+        pwm1.set(8);
+    }
+    else if(control.msg_id == reverse)
+    {
+        pwm1.set(7);
+    }
+    else if(control.msg_id == left)
+    {
+        pwm2.set(7);
+    }
+    else if(control.msg_id == right)
+    {
+        pwm2.set(8);
+    }
 }
 
 void period_1000Hz(void)
 {
-    LE.toggle(4);
+
 }

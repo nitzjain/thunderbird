@@ -10,7 +10,7 @@
  * for vehicle motion
  */
 
-#include <motor_directions.hpp>
+#include "motor_directions.hpp"
 #include <can.h>
 #include "string.h"
 #include "tasks.hpp"

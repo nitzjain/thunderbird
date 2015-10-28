@@ -25,7 +25,83 @@
  */
 #include "tasks.hpp"
 #include "examples/examples.hpp"
-//This is sensors
+#include "can.h"
+#include "gpio.hpp"
+#include "stdio.h"
+#include "io.hpp"
+#include "string.h"
+#include "adc0.h"
+#include "utilities.h"
+#include "uart2.hpp"
+#include "sensor.h"
+
+extern void trigger_LeftSensor();
+
+
+#if 0
+can_msg_t msg1, msg2;
+
+class CanBus : public scheduler_task
+{
+
+    private:
+
+    public:
+           CanBus(uint8_t priority) :
+        scheduler_task("CanBus", 3000, priority)
+        {
+        /* Nothing to init */
+        }
+
+        bool init(void) {
+            CAN_init(can1, 100, 10, 10, 0, 0);
+            CAN_reset_bus(can1);
+            CAN_bypass_filter_accept_all_msgs();
+            memset(&msg1,0,sizeof(msg1));
+            memset(&msg2,0,sizeof(msg1));
+            msg1.msg_id = 0x001;
+           // msg.frame_fields.is_29bit = 0;
+            msg1.frame_fields.data_len = 8;       // Send 8 bytes
+            msg1.data.qword = 0x0000000000000001; // Write all 8 bytes of data at once
+
+            msg2.msg_id = 0x010;
+          // msg.frame_fields.is_29bit = 0;
+            msg2.frame_fields.data_len = 8;       // Send 8 bytes
+            msg2.data.qword = 0x0000000000000001; // Write all 8 bytes of data at once
+            return true;
+        }
+
+        bool run(void *p)
+        {
+            int ret;
+
+//            printf("%d",CAN_is_bus_off(can1));
+
+           // ret = CAN_init(can1, 100, 10, 10, 0, 0);
+            //printf("ret val INIT is: %i\n",ret);
+
+
+            if(SW.getSwitch(1))
+            {
+                //msg.data.qword = 0x0000000000000010;
+                //msg.msg_id = 0x001;
+                ret = CAN_tx(can1, &msg1, portMAX_DELAY);
+                printf("ret val TX is: %i\n",ret);
+            }
+
+           // msg.data.qword = 0x0000000000000001;
+            ret = CAN_tx(can1, &msg2, portMAX_DELAY);
+            printf("ret val TX with swich off is:  %i\n",ret);
+
+            vTaskDelay(100);
+            return true;
+        }
+};
+#endif
+
+
+
+
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -42,6 +118,7 @@
  */
 int main(void)
 {
+
     /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.
@@ -122,6 +199,26 @@ int main(void)
         u3.init(WIFI_BAUD_RATE, WIFI_RXQ_SIZE, WIFI_TXQ_SIZE);
         scheduler_add_task(new wifiTask(Uart3::getInstance(), PRIORITY_LOW));
     #endif
-          scheduler_start(); ///< This shouldn't return
+
+
+  // CAN_tx(can1, &msg, portMAX_DELAY);
+
+  // scheduler_add_task(new CanBus(PRIORITY_HIGH)); //for can
+#if 0
+        float reading = 0;
+
+            // Initialization :
+            LPC_PINCON->PINSEL3 |=  (3 << 28); // ADC-4 is on P1.30, select this as ADC0.4
+
+            while(1) {
+                reading = adc0_get_reading(4); // Read current value of ADC-4
+                printf("\nADC Reading: %f", reading/6.44);
+                delay_ms(1000);
+            }
+
+            return 0;
+#endif
+
+    scheduler_start(); ///< This shouldn't return
     return -1;
 }

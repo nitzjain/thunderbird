@@ -28,59 +28,49 @@
  * do must be completed within 1ms.  Running over the time slot will reset the system.
  */
 
-#include <adc_sen.hpp>
+#include <sensor.h>
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-#include "queue.h"
-#include <stdio.h>
-#include "tasks.hpp"
-#include "task.h"
+#include "stdio.h"
 #include "file_logger.h"
+#include "eint.h"
+#include "utilities.h"
 
+
+
+/// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
-int a[10];
-void hz1()
-{
-int left=0;
 
-    for(int j=0;j<9;j++)
-    {
-        left+=a[j];
-    }
-LOG_INFO("left: %d",left/10);
-}
 
-void hz10()
-{
-    int x;
-if(x <10)
-{
-    a[x]=sensval();
-    x++;
-LOG_INFO("Printing 10Hz Reading: \t%d ,Count=\t%d",a[x],x);
-x++;
-}
-else
-x=0;
-
-}
 void period_1Hz(void)
 {
-hz1();
+    //LE.toggle(1);
+   // trigger_LeftSensor();
+
+   // eint3_enable_port2(0, eint_rising_edge, leftSensorRiseEdge);
+
 }
 
 void period_10Hz(void)
 {
-hz10();
+
+    LE.toggle(2);
+    eint3_enable_port2(0, eint_rising_edge, leftSensorRiseEdge);
+    eint3_enable_port2(0, eint_falling_edge, leftSensorfallEdge);
+    delay_us(5);
+
+
+
 }
 
 void period_100Hz(void)
 {
    // LE.toggle(3);
+
 }
 
 void period_1000Hz(void)
 {
-    //LE.toggle(4);
+    LE.toggle(4);
 }

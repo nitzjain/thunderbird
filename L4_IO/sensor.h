@@ -18,6 +18,7 @@ void trigger_RightSensor();
 void trigger_all_sensors();
 void leftSensorRiseEdge();
 void leftSensorfallEdge();
+void routine();
 
 #ifdef __cplusplus
 }

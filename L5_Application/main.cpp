@@ -35,8 +35,6 @@
 #include "uart2.hpp"
 #include "sensor.h"
 
-extern void trigger_LeftSensor();
-
 
 #if 0
 can_msg_t msg1, msg2;
@@ -118,8 +116,9 @@ class CanBus : public scheduler_task
  */
 int main(void)
 {
+    trigger_LeftSensor();
 
-    /**
+       /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.
      *      2.  Remote task allows you to use remote control to interact with the board.

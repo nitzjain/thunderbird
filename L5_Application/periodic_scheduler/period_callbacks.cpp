@@ -55,22 +55,17 @@ void period_1Hz(void)
 void period_10Hz(void)
 {
 
+    routine();
     LE.toggle(2);
-    eint3_enable_port2(0, eint_rising_edge, leftSensorRiseEdge);
-    eint3_enable_port2(0, eint_falling_edge, leftSensorfallEdge);
-    delay_us(5);
-
-
-
 }
 
 void period_100Hz(void)
 {
    // LE.toggle(3);
-
 }
 
 void period_1000Hz(void)
 {
-    LE.toggle(4);
+
+   // LE.toggle(4);
 }

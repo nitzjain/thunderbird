@@ -31,6 +31,9 @@ This is the gpssensor branch
 #include "examples/examples.hpp"
 #include "stdio.h"
 #include "io.hpp"
+#include "file_logger.h"
+#include "gps_datatype.h"
+
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -46,36 +49,52 @@ This is the gpssensor branch
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 
-class Gps_task: public scheduler_task
-{  private:
-        Uart2 &Gps_uart;
 
 
-    public:Gps_task(uint8_t priority):scheduler_task("Gps_task",2048,priority),
-            Gps_uart(Uart2::getInstance())
-    {
-        Gps_uart.init(9600,0,0);
+class gps_task : public scheduler_task
+{
+    public:
+        gps_task(uint8_t priority) :
+            scheduler_task("gps_task", 2048, priority),
+            gps_uart(Uart2::getInstance()),
+            gps_data_q(NULL)
+        {
+            gps_uart.init(9600, gps_rx_q_size, 1);
+        }
 
+        bool init(void)
+        {
+            gps_data_q = xQueueCreate(2, sizeof(gps_data_t));
+            addSharedObject("gps_queue", gps_data_q);
+            return (NULL != gps_data_q);
+        }
 
-    }
+        bool run(void *p)
+        {
+            char buffer[100];
+            if( gps_uart.gets(buffer, sizeof(buffer), 1000)) {
 
-    double longitude,latitude;
-    bool run(void *p)
-    {
-        char rxb[100];
+                sscanf(buffer,"%*s,%f,%f", &gps_data.longitude, &gps_data.latitude);
 
+                if (!xQueueSend(gps_data_q, &gps_data, 0)) {
+                    LOG_ERROR("Error:Queue send ");
 
-                   if(!(Gps_uart.gets(rxb, sizeof(rxb),2000)))
-                   {
-                       LE.on(1);
-                   }
-                   else
-                       sscanf(rxb,"%*s,%f,%f",longitude,latitude);
-                       printf("longitude = %f\n latitude =%f \n\n", longitude,latitude);
+                }
+            }
+            else {
+                LE.on(1);
+            }
 
-     return true ;
-    }
+            return true;
+        }
+
+    private:
+        Uart2 &gps_uart;
+        QueueHandle_t gps_data_q;
+        gps_data_t gps_data;
+        static const int gps_rx_q_size = 100;
 };
+
 int main(void)
 {
     /**
@@ -89,8 +108,8 @@ int main(void)
      * control codes can be learned by typing the "learn" terminal command.
      */
     scheduler_add_task(new terminalTask(PRIORITY_HIGH));
-    scheduler_add_task(new Gps_task(PRIORITY_MEDIUM));
-
+    scheduler_add_task(new gps_task(PRIORITY_MEDIUM));
+  //  scheduler_add_task(new compass(PRIORITY_MEDIUM));
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 

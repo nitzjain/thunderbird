@@ -40,6 +40,9 @@
 #define left 0x122
 #define right 0x123
 
+#include "can_periodic/canperiodicext.hpp"
+
+
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 

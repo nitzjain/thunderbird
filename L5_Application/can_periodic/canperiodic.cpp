@@ -192,42 +192,29 @@ void checkifprocessorsareactive(void)
         if(processorcounter[gpsarrayid]==oldcounter[gpsarrayid])
         {
             //There is no change in gps counter . So gps is dead
-            num_of_active_processors--;
             flag_gps = 1;
             gpiogps.setLow();
         }
         else
         {
-            if(flag_gps == 1)
-            {
-                if(num_of_active_processors<4)
-                    num_of_active_processors++;
 
-                gpiogps.setHigh();
+            gpiogps.setHigh();
+            flag_gps = 0;
 
-                flag_gps = 0;
-            }
         }
 
         if(processorcounter[motorarrayid]==oldcounter[motorarrayid])
         {
             //There is no change in motor counter . So motor is dead
-            num_of_active_processors--;
             flag_motor = 1;
             gpiomotor.setLow();
 
         }
         else
         {
-            if(flag_motor == 1)
-            {
-                if(num_of_active_processors<4)
-                    num_of_active_processors++;
+               gpiomotor.setHigh();
+               flag_motor = 0;
 
-                gpiomotor.setHigh();
-
-                flag_motor = 0;
-            }
         }
 
         if(processorcounter[sensorarrayid] == oldcounter[sensorarrayid])
@@ -235,19 +222,11 @@ void checkifprocessorsareactive(void)
             //There is no change in sensor counter . So sensor is dead
             gpiosensor.setLow();
             flag_sensor = 1;
-            num_of_active_processors--;
         }
         else
         {
-            if(flag_sensor == 1)
-            {
-                if(num_of_active_processors<4)
-                    num_of_active_processors++;
-
-                gpiosensor.setHigh();
-
-                flag_sensor = 0;
-            }
+                 gpiosensor.setHigh();
+                 flag_sensor = 0;
         }
 
         if(processorcounter[bridgearrayid] == oldcounter[bridgearrayid])
@@ -255,26 +234,18 @@ void checkifprocessorsareactive(void)
            //There is no change in motor counter . So motor is dead
            gpiobridge.setLow();
            flag_bridge = 1;
-           num_of_active_processors--;
         }
         else
         {
-            if(flag_bridge == 1)
-            {
-                if(num_of_active_processors<4)
-                    num_of_active_processors++;
-
                 gpiobridge.setHigh();
-
                 flag_bridge = 0;
-            }
         }
 
         oldcounter[motorarrayid]  = processorcounter[motorarrayid];
         oldcounter[sensorarrayid] = processorcounter[sensorarrayid];
         oldcounter[gpsarrayid]    = processorcounter[gpsarrayid];
         oldcounter[bridgearrayid] = processorcounter[bridgearrayid];
-
+        num_of_active_processors = 4 -( flag_gps + flag_sensor + flag_motor + flag_bridge);
         LD.setNumber(num_of_active_processors);
 
         counter=0;

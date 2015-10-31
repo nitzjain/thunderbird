@@ -116,7 +116,18 @@ class CanBus : public scheduler_task
  */
 int main(void)
 {
-    trigger_LeftSensor();
+   // trigger_LeftSensor();
+
+    delay_ms(250);
+
+    initLeft();
+
+    while(1)
+    {
+        Left_run();
+        delay_ms(25);
+        //LPC_GPIO2->FIOCLR = (1 << 0);
+    }
 
        /**
      * A few basic tasks for this bare-bone system :
@@ -134,7 +145,7 @@ int main(void)
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 1
+    #if 0
     scheduler_add_task(new periodicSchedulerTask());
     #endif
 

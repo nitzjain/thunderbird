@@ -56,7 +56,7 @@ typedef enum procarrayid
 //const uint8_t hzmultiplier = 15;
 
 /* Current Processor Name */
-proccanmesgid myprocessor = motor;
+proccanmesgid myprocessor = bridge;
 
 int processorcounter[5]={0,0,0,0,0};
 

@@ -15,15 +15,12 @@
  *     You can reach the author of this software at :
  *          p r e e t . w i k i @ g m a i l . c o m
  */
- /*
- This is the motor controller code
- */
 
 /**
  * @file
  * @brief This is the application entry point.
- * 			FreeRTOS and stdio printf is pre-configured to use uart0_min.h before main() enters.
- * 			@see L0_LowLevel/lpc_sys.h if you wish to override printf/scanf functions.
+ *          FreeRTOS and stdio printf is pre-configured to use uart0_min.h before main() enters.
+ *          @see L0_LowLevel/lpc_sys.h if you wish to override printf/scanf functions.
  *
  */
 #include "tasks.hpp"
@@ -58,6 +55,8 @@
 #include "can.h"
 #include "lpc_pwm.hpp"
 #include "switches.hpp"
+//#include "periodic_callback.h"
+
 
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
@@ -74,25 +73,63 @@
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 
-/** Motor Control
- * pwm1 - Drives DC motor
- * pwm2 - Drives servo motor
- **/
+#define forward 0x120
+#define reverse 0x121
+#define left 0x122
+#define right 0x123
+
+
+//can message id
+can_msg_t control;
+
+
+void button_press(void *p)
+{
+    PWM pwm1(PWM::pwm1, 50);
+    PWM pwm2(PWM::pwm2, 50);
+    while (1)
+    {
+        pwm1.set(7.5);
+        pwm2.set(7);
+        printf("PWM set\n");
+        CAN_rx(can1, &control, portMAX_DELAY); //receive message to turn on the led
+        printf("CAN Message received\n");
+        if (control.msg_id == forward)
+        {
+           printf("1\n");
+            pwm1.set(9);
+        }
+        else if(control.msg_id == reverse)
+        {
+            printf("2\n");
+            pwm1.set(7);
+        }
+        else if(control.msg_id == left)
+        {
+            printf("3\n");
+            pwm2.set(9);
+        }
+        else if(control.msg_id == right)
+        {
+            printf("4\n");
+            pwm2.set(5);
+        }
+        delay_ms(50);
+    }
+}
+
 
 int main(void)
 {
-    CAN_init(can1, 250, 1024, 1024, NULL, NULL); //initialize can bus 1
-    CAN_bypass_filter_accept_all_msgs(); //accept all messages
-    CAN_reset_bus(can1); //resets the CAN bus
+        CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
+        CAN_bypass_filter_accept_all_msgs(); //accept all messages
+        CAN_reset_bus(can1); //resets the CAN bus*/
 
-    PWM pwm1(PWM::pwm1, 50);
-    PWM pwm2(PWM::pwm2, 50);
-    pwm1.set(7.5);
-    pwm2.set(7.5);
+        xTaskCreate(button_press,"button",1024,0,1,0);
+        vTaskStartScheduler();
+        while(1);
+        return -1;
 
-    scheduler_add_task(new periodicSchedulerTask());
-    scheduler_start();
-    return -1;
     /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.
@@ -109,13 +146,12 @@ int main(void)
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 0
+#if 0
     scheduler_add_task(new periodicSchedulerTask());
-    #endif
+#endif
 
     /* The task for the IR receiver */
     // scheduler_add_task(new remoteTask  (PRIORITY_LOW));
-
     /* Your tasks should probably used PRIORITY_MEDIUM or PRIORITY_LOW because you want the terminal
      * task to always be responsive so you can poke around in case something goes wrong.
      */
@@ -124,37 +160,37 @@ int main(void)
      * This is a the board demonstration task that can be used to test the board.
      * This also shows you how to send a wireless packets to other boards.
      */
-    #if 0
-        scheduler_add_task(new example_io_demo());
-    #endif
+#if 0
+    scheduler_add_task(new example_io_demo());
+#endif
 
     /**
      * Change "#if 0" to "#if 1" to enable examples.
      * Try these examples one at a time.
      */
-    #if 0
-        scheduler_add_task(new example_task());
-        scheduler_add_task(new example_alarm());
-        scheduler_add_task(new example_logger_qset());
-        scheduler_add_task(new example_nv_vars());
-    #endif
+#if 0
+    scheduler_add_task(new example_task());
+    scheduler_add_task(new example_alarm());
+    scheduler_add_task(new example_logger_qset());
+    scheduler_add_task(new example_nv_vars());
+#endif
 
     /**
-	 * Try the rx / tx tasks together to see how they queue data to each other.
-	 */
-    #if 0
-        scheduler_add_task(new queue_tx());
-        scheduler_add_task(new queue_rx());
-    #endif
+     * Try the rx / tx tasks together to see how they queue data to each other.
+     */
+#if 0
+    scheduler_add_task(new queue_tx());
+    scheduler_add_task(new queue_rx());
+#endif
 
     /**
      * Another example of shared handles and producer/consumer using a queue.
      * In this example, producer will produce as fast as the consumer can consume.
      */
-    #if 0
-        scheduler_add_task(new producer());
-        scheduler_add_task(new consumer());
-    #endif
+#if 0
+    scheduler_add_task(new producer());
+    scheduler_add_task(new consumer());
+#endif
 
     /**
      * If you have RN-XV on your board, you can connect to Wifi using this task.
@@ -168,12 +204,13 @@ int main(void)
      *     addCommandChannel(Uart3::getInstance(), false);
      * @endcode
      */
-    #if 0
-        Uart3 &u3 = Uart3::getInstance();
-        u3.init(WIFI_BAUD_RATE, WIFI_RXQ_SIZE, WIFI_TXQ_SIZE);
-        scheduler_add_task(new wifiTask(Uart3::getInstance(), PRIORITY_LOW));
-    #endif
+#if 0
+    Uart3 &u3 = Uart3::getInstance();
+    u3.init(WIFI_BAUD_RATE, WIFI_RXQ_SIZE, WIFI_TXQ_SIZE);
+    scheduler_add_task(new wifiTask(Uart3::getInstance(), PRIORITY_LOW));
+#endif
 
     scheduler_start(); ///< This shouldn't return
     return -1;
 }
+

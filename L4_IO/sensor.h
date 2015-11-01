@@ -17,15 +17,19 @@ void trigger_LeftSensor();
 void trigger_CentralSensor();
 void trigger_RightSensor();
 void trigger_all_sensors();
-void leftSensorRiseEdge();
-void leftSensorfallEdge();
-void routine();
-void initLeft();
-void Left_run();
-void initPWint(eint_intr_t eintType);
-void eintCallback();
+int Left_run();
+int Right_run();
+int Mid_run();
 
-
+void initPWleft(eint_intr_t eintType);
+void eintCallbackleft();
+void initPWright(eint_intr_t eintType);
+void eintCallbackright();
+void initPWmid(eint_intr_t eintType);
+void eintCallbackmid();
+int GetLeftSensorReading();
+int GetRightSensorReading();
+int GetMidSensorReading();
 #ifdef __cplusplus
 }
 #endif

@@ -116,17 +116,15 @@ class CanBus : public scheduler_task
  */
 int main(void)
 {
-   // trigger_LeftSensor();
+    int Sen_val[3];
 
-    delay_ms(250);
+    Sen_val[0]=GetLeftSensorReading();
+    Sen_val[1]=GetRightSensorReading();
+   // Sen_val[2]=GetMidSensorReading();
 
-    initLeft();
-
-    while(1)
+    for(int k=0;k<2;k++)
     {
-        Left_run();
-        delay_ms(25);
-        //LPC_GPIO2->FIOCLR = (1 << 0);
+    printf("Reading is: %i\n",Sen_val[k]);
     }
 
        /**

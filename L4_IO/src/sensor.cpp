@@ -37,6 +37,7 @@ int SysTimeL=0; int start_time =0; int PW_Left=0; int LeftSensorDistance = 0;
 int end_time;
 bool Int_type=1;
 
+
 void trigger_LeftSensor()
 {
     LPC_GPIO2->FIODIR |= (1 << 0);
@@ -50,13 +51,13 @@ void trigger_LeftSensor()
     //printf("SysTimeLeft is %i\n",SysTimeL );
 }
 
-void initLeft()
-{
-    trigger_LeftSensor();
-    LE.init();
-}
+//void initLeft()
+//{
+ //   trigger_LeftSensor();
+ //   LE.init();
+//}
 
-void Left_run()
+int Left_run()
 {
     trigger_LeftSensor();
    // LPC_GPIO2->FIODIR |= (1 << 1);  //set as output
@@ -67,66 +68,19 @@ void Left_run()
     //delay_us(700);
     LPC_GPIO2->FIODIR &= ~(1 << 1); //set as input
 
-    initPWint(eint_rising_edge);
+    initPWleft(eint_rising_edge);
     //delay_ms(250);
-
-
+    return PW_Left;
 }
 
-void trigger_CentralSensor()
+
+
+void initPWleft(eint_intr_t eintType)
 {
-    LPC_GPIO2->FIODIR |= (1 << 2);
-    LPC_GPIO2->FIOCLR = (1 << 2);
-    LPC_GPIO2->FIOSET = (1 << 2);
-    delay_us(25);
-    LPC_GPIO2->FIOSET = (1 << 2);
+    eint3_enable_port2(1, eintType, eintCallbackleft);
 }
 
-void trigger_RightSensor()
-{
-    LPC_GPIO2->FIODIR |= (1 << 4);
-    LPC_GPIO2->FIOCLR = (1 << 4);
-    LPC_GPIO2->FIOSET = (1 << 4);
-    delay_us(25);
-    LPC_GPIO2->FIOSET = (1 << 4);
-}
-
-void trigger_all_sensors()
-{
-   trigger_LeftSensor();
-   trigger_CentralSensor();
-   trigger_RightSensor();
-}
-
-
-void leftSensorRiseEdge()
-{
-        start_time = (int) sys_get_uptime_us();
-        printf("Rise edge interrupt enabled with start time %i\n",start_time);
-}
-
-void leftSensorfallEdge()
-{
-    end_time = (int) sys_get_uptime_us();
-    PW_Left = end_time - start_time;
-    printf("Fall edge interrupt enabled ant end time %i\n",end_time);
-    LeftSensorDistance = PW_Left/147;
-    printf("distance is %i: \n",LeftSensorDistance);
-}
-
-void routine()
-{
-    eint3_enable_port2(1, eint_rising_edge, leftSensorRiseEdge);
-        eint3_enable_port2(1, eint_falling_edge, leftSensorfallEdge);
-        delay_ms(1);
-}
-
-void initPWint(eint_intr_t eintType)
-{
-    eint3_enable_port2(1, eintType, eintCallback);
-}
-
-void eintCallback()
+void eintCallbackleft()
 {
     if(Int_type)
     {
@@ -135,21 +89,153 @@ void eintCallback()
         //printf("Rise edge interrupt enabled with start time %i\n",(int) sys_get_uptime_us());
         start_time = (int) sys_get_uptime_us();
         //printf("Rise edge interrupt enabled with start time %i\n",start_time);
-        initPWint( eint_falling_edge);
+        initPWleft( eint_falling_edge);
    }
     else
     {
         //end_time = (int) sys_get_uptime_us();
-           // PW_Left = end_time - start_time;
+            PW_Left = ((int) sys_get_uptime_us() - start_time)/147;
           //  printf("Fall edge interrupt enabled at end time %i\n",end_time);
            // LeftSensorDistance = (end_time - start_time)/147;
            // printf("Fall edge interrupt enabled at end time %i\n",end_time);
-            printf("distance is: %i\n",((int) sys_get_uptime_us() - start_time)/147);
+            printf("distance is: %i\n",PW_Left);
             Int_type=1;
           //  delay_ms(5);
-
-
     }
 }
+
+int GetLeftSensorReading()
+{
+    int i=0;  int leftSenVal[10];
+    delay_ms(250);
+
+   // trigger_LeftSensor();
+        while(i<10)
+        {
+            leftSenVal[i]=Left_run();
+            delay_ms(50);
+            i++;
+        }
+        printf("element is %i\n",leftSenVal[9]);
+        LPC_GPIO2->FIOCLR = (1 << 0);
+        return leftSenVal[9];
+
+
+}
+
+void trigger_RightSensor()
+{
+    LPC_GPIO2->FIODIR |= (1 << 4);
+    LPC_GPIO2->FIOCLR = (1 << 4);
+    LPC_GPIO2->FIOSET = (1 << 4);
+}
+
+
+int Right_run()
+{
+    trigger_RightSensor();
+    LPC_GPIO2->FIOCLR = (1 << 5);   //clear
+    LPC_GPIO2->FIODIR &= ~(1 << 5); //set as input
+    initPWright(eint_rising_edge);
+    return PW_Left;
+}
+
+
+void initPWright(eint_intr_t eintType)
+{
+    eint3_enable_port2(5, eintType, eintCallbackright);
+}
+
+void eintCallbackright()
+{
+    if(Int_type)
+    {
+        Int_type=0;
+        start_time = (int) sys_get_uptime_us();
+        initPWright( eint_falling_edge);
+   }
+    else
+    {
+            PW_Left = ((int) sys_get_uptime_us() - start_time)/147;
+            printf("distance is: %i\n",PW_Left);
+            Int_type=1;
+    }
+}
+
+int GetRightSensorReading()
+{
+    int i=0;  int leftSenVal[10];
+    delay_ms(250);
+
+        while(i<10)
+        {
+            leftSenVal[i]=Right_run();
+            delay_ms(50);
+            i++;
+        }
+        printf("element is %i\n",leftSenVal[9]);
+        LPC_GPIO2->FIOCLR = (1 << 4);
+        return leftSenVal[9];
+
+
+}
+
+void trigger_MidSensor()
+{
+    LPC_GPIO2->FIODIR |= (1 << 2);
+    LPC_GPIO2->FIOCLR = (1 << 2);
+    LPC_GPIO2->FIOSET = (1 << 2);
+}
+
+
+int Mid_run()
+{
+    trigger_MidSensor();
+    LPC_GPIO2->FIOCLR = (1 << 3);   //clear
+    LPC_GPIO2->FIODIR &= ~(1 << 3); //set as input
+    initPWmid(eint_rising_edge);
+    return PW_Left;
+}
+
+
+void initPWmid(eint_intr_t eintType)
+{
+    eint3_enable_port2(3, eintType, eintCallbackmid);
+}
+
+void eintCallbackmid()
+{
+    if(Int_type)
+    {
+        Int_type=0;
+        start_time = (int) sys_get_uptime_us();
+        initPWmid( eint_falling_edge);
+   }
+    else
+    {
+            PW_Left = ((int) sys_get_uptime_us() - start_time)/147;
+            printf("distance is: %i\n",PW_Left);
+            Int_type=1;
+    }
+}
+
+int GetMidSensorReading()
+{
+    int i=0;  int leftSenVal[10];
+    delay_ms(250);
+
+        while(i<10)
+        {
+            leftSenVal[i]=Mid_run();
+            delay_ms(50);
+            i++;
+        }
+        printf("element is %i\n",leftSenVal[9]);
+        LPC_GPIO2->FIOCLR = (1 << 2);
+        return leftSenVal[9];
+
+
+}
+
 
 

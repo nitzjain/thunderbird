@@ -55,7 +55,7 @@ void period_1Hz(void)
 void period_10Hz(void)
 {
 
-    routine();
+   // routine();
     LE.toggle(2);
 }
 

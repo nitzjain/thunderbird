@@ -41,7 +41,7 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
 void period_1Hz(void)
 {
-    canheartbeat();
+
 }
 
 void period_10Hz(void)
@@ -52,6 +52,7 @@ void period_10Hz(void)
 void period_100Hz(void)
 {
    // LE.toggle(3);
+    canheartbeat();
 }
 
 void period_1000Hz(void)

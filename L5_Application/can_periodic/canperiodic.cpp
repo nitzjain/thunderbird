@@ -327,8 +327,8 @@ void canheartbeat(void)
         }
     }
 
-    sendcanmesg(myprocessor);
-
+    //sendcanmesg(myprocessor);
+    testmotorwithswitch();
     canreceivebasicheartbeat();
 
     if(myprocessor==master)

@@ -3,5 +3,5 @@
 
 /* Global Function Declarations */
 extern void canheartbeat(void);
-
+extern void testmotorwithswitch(void);
 #endif

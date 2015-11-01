@@ -72,23 +72,7 @@ void period_100Hz(void)
 {
 
     //CAN RX Task
-    CAN_rx(can1, &control, portMAX_DELAY); //receive message to turn on the led
-    if(control.msg_id == forward)
-    {
-        pwm1.set(8);
-    }
-    else if(control.msg_id == reverse)
-    {
-        pwm1.set(7);
-    }
-    else if(control.msg_id == left)
-    {
-        pwm2.set(7);
-    }
-    else if(control.msg_id == right)
-    {
-        pwm2.set(8);
-    }
+    canheartbeat();
 }
 
 void period_1000Hz(void)

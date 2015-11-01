@@ -80,7 +80,7 @@
 
 
 //can message id
-can_msg_t control;
+/*can_msg_t control;
 
 
 void button_press(void *p)
@@ -118,17 +118,17 @@ void button_press(void *p)
     }
 }
 
-
+*/
 int main(void)
 {
-        CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
-        CAN_bypass_filter_accept_all_msgs(); //accept all messages
-        CAN_reset_bus(can1); //resets the CAN bus*/
+        //CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
+        //CAN_bypass_filter_accept_all_msgs(); //accept all messages
+        //CAN_reset_bus(can1); //resets the CAN bus*/
 
-        xTaskCreate(button_press,"button",1024,0,1,0);
-        vTaskStartScheduler();
-        while(1);
-        return -1;
+        //xTaskCreate(button_press,"button",1024,0,1,0);
+        //vTaskStartScheduler();
+        //while(1);
+        //return -1;
 
     /**
      * A few basic tasks for this bare-bone system :
@@ -146,7 +146,7 @@ int main(void)
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-#if 0
+#if 1
     scheduler_add_task(new periodicSchedulerTask());
 #endif
 

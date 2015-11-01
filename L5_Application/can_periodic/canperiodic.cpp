@@ -105,9 +105,9 @@ void sendcanmesg(const uint8_t msgid)
             msg.frame_fields.is_29bit = 0;
             msg.frame_fields.data_len = 1;
             msg.data.bytes[0] = 1;
-            if(CAN_tx(mycan,&msg,100))
+            if(CAN_tx(mycan,&msg,5))
             {
-                printf("Can sent heartbeat");
+                //printf("Can sent heartbeat");
             }
             else
             {
@@ -312,6 +312,7 @@ void canreceivebasicheartbeat(void)
            /* Light on the LED */
            gpioop.toggle();
         }
+        motorprocessmessage(msg);
 
         if(myprocessor == master)
         {

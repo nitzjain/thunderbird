@@ -55,7 +55,6 @@
 #include "can.h"
 #include "lpc_pwm.hpp"
 #include "switches.hpp"
-//#include "periodic_callback.h"
 
 
 /**
@@ -72,6 +71,7 @@
  *        In either case, you should avoid using this bus or interfacing to external components because
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
+
 
 
 int main(void)

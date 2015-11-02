@@ -36,13 +36,13 @@
 #include "lpc_pwm.hpp"
 #include "singleton_template.hpp"
 #include "can_periodic/canperiodicext.hpp"
+#include "motor_directions/motor_directions.hpp"
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
 //can message id
 can_msg_t control;
-
 
 class MotorController: public SingletonTemplate<MotorController>
 {
@@ -62,17 +62,18 @@ class MotorController: public SingletonTemplate<MotorController>
         PWM mSteerMotor;
 
         MotorController() :
-                mDriveMotor(PWM::pwm1), mSteerMotor(PWM::pwm2)
+                mDriveMotor(PWM::pwm1, 50), mSteerMotor(PWM::pwm2, 50)
         {
 
         }
         friend class SingletonTemplate<MotorController> ;
         ///< Friend class used for Singleton Tem
+
 };
 
 void period_1Hz(void)
 {
-
+    //should test in 1Hz
 }
 
 void period_10Hz(void)
@@ -82,45 +83,49 @@ void period_10Hz(void)
 
 void period_100Hz(void)
 {
+    static int flag = 0;
+    MotorController &M = MotorController::getInstance();
+
+    if (flag == 0)
+    {
+        M.setDriveMotor(7.5); //Initialize the motor
+        flag++;
+    }
+
+    /* Move forward - */
+    if (CAN_rx(can1, &control, 10))
+    {
+        if (control.msg_id == forward) //go forward - 000
+        {
+            M.setDriveMotor(8); //Move forward
+            M.setSteerMotor(7);
+        }
+        else if (control.msg_id == left) //go left 001, 011
+        {
+            M.setDriveMotor(8);
+            M.setSteerMotor(6);
+        }
+        else if (control.msg_id == right) //go right 010, 100, 110
+        {
+            M.setDriveMotor(8);
+            M.setSteerMotor(8.5);
+        }
+        else if (control.msg_id == reverse) //go back 111, 101
+        {
+            //M.setDriveMotor(7.5);
+            M.setSteerMotor(8.5);
+            M.setDriveMotor(6);
+        }
+        else if (control.msg_id == stop)
+        {
+            M.setDriveMotor(7.5);
+            M.setSteerMotor(7);
+        }
+    }
 
 }
 
 void period_1000Hz(void)
 {
-    static int flag = 0;
-    if (flag == 0)
-    {
-        MotorController::getInstance().setDriveMotor(7.5); //Initialize the motor
-        flag++;
-    }
-    if (CAN_rx(can1, &control, 10))
-    {
-        if () //go forward - 000
-        {
-            MotorController::getInstance().setDriveMotor(8.5);
-            MotorController::getInstance().setSteerMotor(7);
-        }
-        else if () //go left 001, 011
-        {
-            MotorController::getInstance().setDriveMotor(8);
-            MotorController::getInstance().setSteerMotor(6);
-        }
-        else if () //go right 010, 100, 110
-        {
-            MotorController::getInstance().setDriveMotor(8);
-            MotorController::getInstance().setSteerMotor(8.5);
-        }
-        else if () //go back 111, 101
-        {
-            //MotorController::getInstance().setDriveMotor(7.5);
-            MotorController::getInstance().setDriveMotor(6);
-            MotorController::getInstance().setSteerMotor(8.5);
-        }
-        else if ()
-        {
-            MotorController::getInstance().setDriveMotor(7.5);
-            MotorController::getInstance().setSteerMotor(7);
-        }
-    }
 
 }

@@ -20,6 +20,10 @@ void trigger_all_sensors();
 int Left_run();
 int Right_run();
 int Mid_run();
+void initPWDummy(eint_intr_t eintType);
+void eintCallbackDummy();
+int Dummy_run();
+int GetDummyReading();
 
 void initPWleft(eint_intr_t eintType);
 void eintCallbackleft();

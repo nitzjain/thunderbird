@@ -35,6 +35,8 @@
 #include "uart2.hpp"
 #include "sensor.h"
 
+uint8_t Sen_val[3];
+
 
 #if 0
 can_msg_t msg1, msg2;
@@ -52,20 +54,22 @@ class CanBus : public scheduler_task
         }
 
         bool init(void) {
-            CAN_init(can1, 100, 10, 10, 0, 0);
+            CAN_init(can1, 100, 100, 100, 0, 0);
             CAN_reset_bus(can1);
             CAN_bypass_filter_accept_all_msgs();
             memset(&msg1,0,sizeof(msg1));
-            memset(&msg2,0,sizeof(msg1));
+           // memset(&msg2,0,sizeof(msg1));
             msg1.msg_id = 0x001;
            // msg.frame_fields.is_29bit = 0;
-            msg1.frame_fields.data_len = 8;       // Send 8 bytes
-            msg1.data.qword = 0x0000000000000001; // Write all 8 bytes of data at once
+            msg1.frame_fields.data_len = 3;       // Send 3 bytes
+            msg1.data.bytes[0] = Sen_val[0];
+            msg1.data.bytes[1] = Sen_val[1];
+            msg1.data.bytes[2] = Sen_val[2];
 
-            msg2.msg_id = 0x010;
-          // msg.frame_fields.is_29bit = 0;
-            msg2.frame_fields.data_len = 8;       // Send 8 bytes
-            msg2.data.qword = 0x0000000000000001; // Write all 8 bytes of data at once
+//            msg2.msg_id = 0x010;
+//          // msg.frame_fields.is_29bit = 0;
+//            msg2.frame_fields.data_len = 8;       // Send 8 bytes
+//            msg2.data.qword = 0x0000000000000001; // Write all 8 bytes of data at once
             return true;
         }
 
@@ -78,20 +82,21 @@ class CanBus : public scheduler_task
            // ret = CAN_init(can1, 100, 10, 10, 0, 0);
             //printf("ret val INIT is: %i\n",ret);
 
+            CAN_tx(can1, &msg1, portMAX_DELAY);
 
-            if(SW.getSwitch(1))
-            {
-                //msg.data.qword = 0x0000000000000010;
-                //msg.msg_id = 0x001;
-                ret = CAN_tx(can1, &msg1, portMAX_DELAY);
-                printf("ret val TX is: %i\n",ret);
-            }
-
-           // msg.data.qword = 0x0000000000000001;
-            ret = CAN_tx(can1, &msg2, portMAX_DELAY);
-            printf("ret val TX with swich off is:  %i\n",ret);
-
-            vTaskDelay(100);
+//            if(SW.getSwitch(1))
+//            {
+//                //msg.data.qword = 0x0000000000000010;
+//                //msg.msg_id = 0x001;
+//                ret = CAN_tx(can1, &msg1, portMAX_DELAY);
+//                printf("ret val TX is: %i\n",ret);
+//            }
+//
+//           // msg.data.qword = 0x0000000000000001;
+//            ret = CAN_tx(can1, &msg2, portMAX_DELAY);
+//            printf("ret val TX with swich off is:  %i\n",ret);
+//
+//            vTaskDelay(100);
             return true;
         }
 };
@@ -116,16 +121,26 @@ class CanBus : public scheduler_task
  */
 int main(void)
 {
-    int Sen_val[3];
+  //  delay_ms(250);
+
+
+    while(1){
 
     Sen_val[0]=GetLeftSensorReading();
-    Sen_val[1]=GetRightSensorReading();
-   // Sen_val[2]=GetMidSensorReading();
-
-    for(int k=0;k<2;k++)
-    {
-    printf("Reading is: %i\n",Sen_val[k]);
+    delay_ms(10);
+    printf("Reading LEFT is: %i\n",Sen_val[0]);
+    delay_ms(100);
+//    Sen_val[1]=GetRightSensorReading();
+//   // Sen_val[2]=GetMidSensorReading();
+//    delay_ms(50);
+//
+//
+//       printf("Reading RIGHT is: %i\n",Sen_val[1]);
+       //printf("Reading MID is: %i\n",Sen_val[2]);
+      // delay_ms(50);
     }
+
+
 
        /**
      * A few basic tasks for this bare-bone system :
@@ -140,7 +155,7 @@ int main(void)
     scheduler_add_task(new terminalTask(PRIORITY_HIGH));
 
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
-    scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
+   // scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
     #if 0

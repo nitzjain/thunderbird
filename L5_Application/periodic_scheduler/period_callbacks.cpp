@@ -29,19 +29,13 @@
  */
 
 #include <stdint.h>
+#include "stdio.h"
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "can.h"
 #include "lpc_pwm.hpp"
-
-//CAN id's
-#define forward 0x120
-#define reverse 0x121
-#define left 0x122
-#define right 0x123
-
+#include "singleton_template.hpp"
 #include "can_periodic/canperiodicext.hpp"
-
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -49,14 +43,32 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 //can message id
 can_msg_t control;
 
-//Initialize PWM
-/*PWM1 - Controls the DC motor
- *PWM2 - Controls the Servo motor
- */
-PWM pwm1(PWM::pwm1, 50);
-PWM pwm2(PWM::pwm2, 50);
 
+class MotorController: public SingletonTemplate<MotorController>
+{
+    public:
 
+        void setDriveMotor(float v)
+        {
+            mDriveMotor.set(v);
+        }
+        void setSteerMotor(float v)
+        {
+            mSteerMotor.set(v);
+        }
+
+    private:
+        PWM mDriveMotor;
+        PWM mSteerMotor;
+
+        MotorController() :
+                mDriveMotor(PWM::pwm1), mSteerMotor(PWM::pwm2)
+        {
+
+        }
+        friend class SingletonTemplate<MotorController> ;
+        ///< Friend class used for Singleton Tem
+};
 
 void period_1Hz(void)
 {
@@ -71,11 +83,44 @@ void period_10Hz(void)
 void period_100Hz(void)
 {
 
-    //CAN RX Task
-    canheartbeat();
 }
 
 void period_1000Hz(void)
 {
+    static int flag = 0;
+    if (flag == 0)
+    {
+        MotorController::getInstance().setDriveMotor(7.5); //Initialize the motor
+        flag++;
+    }
+    if (CAN_rx(can1, &control, 10))
+    {
+        if () //go forward - 000
+        {
+            MotorController::getInstance().setDriveMotor(8.5);
+            MotorController::getInstance().setSteerMotor(7);
+        }
+        else if () //go left 001, 011
+        {
+            MotorController::getInstance().setDriveMotor(8);
+            MotorController::getInstance().setSteerMotor(6);
+        }
+        else if () //go right 010, 100, 110
+        {
+            MotorController::getInstance().setDriveMotor(8);
+            MotorController::getInstance().setSteerMotor(8.5);
+        }
+        else if () //go back 111, 101
+        {
+            //MotorController::getInstance().setDriveMotor(7.5);
+            MotorController::getInstance().setDriveMotor(6);
+            MotorController::getInstance().setSteerMotor(8.5);
+        }
+        else if ()
+        {
+            MotorController::getInstance().setDriveMotor(7.5);
+            MotorController::getInstance().setSteerMotor(7);
+        }
+    }
 
 }

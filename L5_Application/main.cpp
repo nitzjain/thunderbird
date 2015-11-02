@@ -73,62 +73,16 @@
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 
-#define forward 0x120
-#define reverse 0x121
-#define left 0x122
-#define right 0x123
 
-
-//can message id
-/*can_msg_t control;
-
-
-void button_press(void *p)
-{
-    PWM pwm1(PWM::pwm1, 50);
-    PWM pwm2(PWM::pwm2, 50);
-    while (1)
-    {
-        pwm1.set(7.5);
-        pwm2.set(7);
-        printf("PWM set\n");
-        CAN_rx(can1, &control, portMAX_DELAY); //receive message to turn on the led
-        printf("CAN Message received\n");
-        if (control.msg_id == forward)
-        {
-           printf("1\n");
-            pwm1.set(9);
-        }
-        else if(control.msg_id == reverse)
-        {
-            printf("2\n");
-            pwm1.set(7);
-        }
-        else if(control.msg_id == left)
-        {
-            printf("3\n");
-            pwm2.set(9);
-        }
-        else if(control.msg_id == right)
-        {
-            printf("4\n");
-            pwm2.set(5);
-        }
-        delay_ms(50);
-    }
-}
-
-*/
 int main(void)
 {
-        //CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
-        //CAN_bypass_filter_accept_all_msgs(); //accept all messages
-        //CAN_reset_bus(can1); //resets the CAN bus*/
+        CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
+        CAN_bypass_filter_accept_all_msgs(); //accept all messages
+        CAN_reset_bus(can1); //resets the CAN bus*/
 
-        //xTaskCreate(button_press,"button",1024,0,1,0);
-        //vTaskStartScheduler();
-        //while(1);
-        //return -1;
+        scheduler_add_task(new periodicSchedulerTask());
+        scheduler_start();
+        return -1;
 
     /**
      * A few basic tasks for this bare-bone system :
@@ -146,7 +100,7 @@ int main(void)
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-#if 1
+#if 0
     scheduler_add_task(new periodicSchedulerTask());
 #endif
 

@@ -1,3 +1,16 @@
+#ifndef _MOTOR_DIRECTION_HPP_
+#define _MOTOR_DIRECTION_HPP_
+
+
+#include "tasks.hpp"
+#include <can.h>
+#include "string.h"
+#include "tasks.hpp"
+#include "examples/examples.hpp"
+#include "stdio.h"
+#include "storage.hpp"
+
+
 //need to update this value based on sensor controller data
 #define  SENSOR_THRESHOLD 1000
 #define MOVE_STRAIGHT 0
@@ -7,8 +20,11 @@
 #define STOP -1
 
 
-typedef enum direction {
+/**
+ * Can IDs for each direction
+ */
 
+typedef enum direction {
     straight = 0X020,
     left = 0x021,
     right = 0X022,
@@ -17,20 +33,61 @@ typedef enum direction {
 
 }direction_t;
 
-typedef enum sensor {
 
-    sensor_straight = 0X030,
-    sensor_right = 0X031,
-    sensor_left = 0X032,
-    sensor_rear = 0X033,
+//To compute sensor values and decide the direction
 
-}sensor_t;
-
-//to compute sensor values and decide the direction
-//bool obstacle_detection(int *);
-
-char direction_computation(int, int, int, int);
+char direction_computation();
 
 
 
+extern int sensor_left, sensor_stright, sensor_right, sensor_reverse;
+extern int gps_direction;
 
+class update_sensor_values: public scheduler_task
+{
+    private:
+    public:
+        update_sensor_values(uint8_t priority) :
+                scheduler_task("update_sensor_values", 1024, priority)
+        {
+                //NOTHING
+        }
+
+        bool init()
+        {
+            //TODO: Change setRunDuration based on sensor team frequency
+            setRunDuration(50);
+            return true;
+        }
+
+        bool run(void *p)
+        {
+            const can_t mycan = can1;
+            can_msg_t msg;
+            memset(&msg,0,sizeof(msg));
+
+            if(CAN_rx(can1, &msg, portMAX_DELAY))
+            {
+                if (msg.msg_id == 0x001 ) {  //TODO: Change CANID based on sensor team input
+                    sensor_left = msg.data.bytes[0];
+                    sensor_stright = msg.data.bytes[1];
+                    sensor_right = msg.data.bytes[2];
+                    sensor_reverse = msg.data.bytes[3];
+                }
+            }
+            else
+            {
+                Storage::append("log_messages", "LOG: Update Sensor Failed", 40, 0);
+                CAN_reset_bus(mycan);
+                if(CAN_is_bus_off(mycan))
+                {
+                    Storage::append("log_messages", "LOG: Can Bus OFF", 40, 0);
+                    CAN_reset_bus(mycan);
+                }
+            }
+            return true;
+        }
+};
+
+
+#endif // _MOTOR_DIRECTION_HPP_

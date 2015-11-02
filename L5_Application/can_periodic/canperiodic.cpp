@@ -19,6 +19,7 @@
 
 #include "canperiodic.hpp"
 #include "canperiodicext.hpp"
+#include "storage.hpp"
 
 /* Local Function Declarations */
 static void canbusoffcalback(uint32_t ICR);
@@ -69,6 +70,7 @@ True if CAN Initialization is successful, else returns FALSE.
 
 bool canperiodicinit(void)
 {
+    Storage::append("log_messages","--Log message file Master Controller--", 40, 0);
     if(!CAN_init(mycan,CANBUSBAUDRATE,
                     CANBUSQUEUESIZE,CANBUSQUEUESIZE,canbusoffcalback,NULL))
         return false;

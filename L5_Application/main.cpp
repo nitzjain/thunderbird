@@ -27,6 +27,8 @@
  */
 #include "tasks.hpp"
 #include "examples/examples.hpp"
+#include "motor_directions/motor_directions.hpp"
+#include "motor_directions/motor_input.hpp"
 
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
@@ -56,8 +58,15 @@ int main(void)
      */
     scheduler_add_task(new terminalTask(PRIORITY_HIGH));
 
+
+    scheduler_add_task(new update_sensor_values(PRIORITY_HIGH));
+    scheduler_add_task(new motor_input(PRIORITY_HIGH));
+
+    #if 0
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
+    #endif
+
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
     #if 1
     scheduler_add_task(new periodicSchedulerTask());

@@ -24,8 +24,8 @@
 
 int gps_direction = 1;
 
-extern int sensor1, sensor2, sensor3, sensor4;
 
+//task to send the directions to motor using different can_ids
 class motor_input: public scheduler_task
 {
     private:
@@ -57,7 +57,7 @@ class motor_input: public scheduler_task
 
             //should optimise in a better way using gps canID's directly
             if (dir == MOVE_STRAIGHT)
-                msg.msg_id = straight; // TODO follow gps co-ordinates
+                msg.msg_id = forward; // TODO follow gps co-ordinates
 
             if (dir == MOVE_RIGHT)
                 msg.msg_id = right;
@@ -65,7 +65,10 @@ class motor_input: public scheduler_task
             if (dir == MOVE_LEFT)
                 msg.msg_id = left;
 
-            if (dir == MOVE_LEFT)
+            if (dir == MOVE_REVERSE)
+                msg.msg_id = reverse; //reverse and left by motor
+
+            if (dir == STOP )
                 msg.msg_id = stop;
 
             if(CAN_tx(mycan,&msg,100))
@@ -80,7 +83,6 @@ class motor_input: public scheduler_task
                 CAN_reset_bus(mycan);
                 if(CAN_is_bus_off(mycan))
                 {
-                    //LOG_INFO("Can is bus off");
                     printf("Can is bus off");
                     CAN_reset_bus(mycan);
 

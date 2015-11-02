@@ -13,24 +13,28 @@ extern "C" {
 
 #include "eint.h"
 
-void trigger_LeftSensor();
-void trigger_CentralSensor();
-void trigger_RightSensor();
-void trigger_all_sensors();
-int Left_run();
-int Right_run();
-int Mid_run();
-void initPWDummy(eint_intr_t eintType);
-void eintCallbackDummy();
-int Dummy_run();
-int GetDummyReading();
 
+
+void trigger_LeftSensor();
+void trigger_MidSensor();
+void trigger_RightSensor();
+
+void eintCallbackleft_Rise();
+void eintCallbackleft_Fall();
 void initPWleft(eint_intr_t eintType);
-void eintCallbackleft();
+
+void eintCallbackright_Rise();
+void eintCallbackright_Fall();
 void initPWright(eint_intr_t eintType);
-void eintCallbackright();
+
+void eintCallbackmid_Rise();
+void eintCallbackmid_Fall();
 void initPWmid(eint_intr_t eintType);
-void eintCallbackmid();
+
+void InitInterruptLeft();
+void InitInterruptRight();
+void InitInterruptMid();
+
 int GetLeftSensorReading();
 int GetRightSensorReading();
 int GetMidSensorReading();

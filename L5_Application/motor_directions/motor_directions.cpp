@@ -18,27 +18,31 @@ int gps_direction = 1;
 
 char direction_computation()
 {
-    if(sensor_left <= SENSOR_THRESHOLD && sensor_stright<=SENSOR_THRESHOLD && sensor_right<=SENSOR_THRESHOLD)
-          return MOVE_STRAIGHT;
-    else if(sensor_left<=SENSOR_THRESHOLD && sensor_stright<=SENSOR_THRESHOLD && sensor_right>SENSOR_THRESHOLD)
-           return MOVE_LEFT;
-    else if(sensor_left <= SENSOR_THRESHOLD && sensor_stright > SENSOR_THRESHOLD && sensor_right  <= SENSOR_THRESHOLD)
+    if(sensor_left >= SENSOR_THRESHOLD && sensor_stright >= SENSOR_THRESHOLD && sensor_right >= SENSOR_THRESHOLD)
+          return MOVE_STRAIGHT; // it should follow GPS co ordinates
+    else if(sensor_left >= SENSOR_THRESHOLD && sensor_stright>=SENSOR_THRESHOLD && sensor_right < SENSOR_THRESHOLD)
+           return MOVE_STRAIGHT;
+    else if(sensor_left >= SENSOR_THRESHOLD && sensor_stright < SENSOR_THRESHOLD && sensor_right  >= SENSOR_THRESHOLD)
               return MOVE_RIGHT;
-    else if(sensor_left <= SENSOR_THRESHOLD &&  sensor_stright > SENSOR_THRESHOLD && sensor_right > SENSOR_THRESHOLD)
+    else if(sensor_left >= SENSOR_THRESHOLD &&  sensor_stright < SENSOR_THRESHOLD && sensor_right < SENSOR_THRESHOLD)
               return MOVE_LEFT;
-    else if(sensor_left > SENSOR_THRESHOLD && sensor_stright<=SENSOR_THRESHOLD && sensor_right<=SENSOR_THRESHOLD)
+    else if(sensor_left < SENSOR_THRESHOLD && sensor_stright >= SENSOR_THRESHOLD && sensor_right >= SENSOR_THRESHOLD)
+              return MOVE_STRAIGHT;
+    else if(sensor_left < SENSOR_THRESHOLD && sensor_stright >= SENSOR_THRESHOLD && sensor_right < SENSOR_THRESHOLD)
+              return MOVE_STRAIGHT;
+    else if(sensor_left < SENSOR_THRESHOLD && sensor_stright < SENSOR_THRESHOLD && sensor_right >= SENSOR_THRESHOLD)
               return MOVE_RIGHT;
-    else if(sensor_left > SENSOR_THRESHOLD && sensor_stright <= SENSOR_THRESHOLD && sensor_right > SENSOR_THRESHOLD)
-              return MOVE_REVERSE;
-    else if(sensor_left > SENSOR_THRESHOLD && sensor_stright > SENSOR_THRESHOLD && sensor_right <= SENSOR_THRESHOLD)
-              return MOVE_RIGHT;
-    else if(sensor_left > SENSOR_THRESHOLD && sensor_stright > SENSOR_THRESHOLD && sensor_right > SENSOR_THRESHOLD) {
-         if (sensor_reverse <=  SENSOR_THRESHOLD)
+    else if(sensor_left < SENSOR_THRESHOLD && sensor_stright < SENSOR_THRESHOLD && sensor_right < SENSOR_THRESHOLD)
+                return STOP;
+#if 0
+    {
+         //enable after the demo
+           if (sensor_reverse >=  SENSOR_THRESHOLD)
                  return MOVE_REVERSE;
          else
                  return STOP;
-         }
-    Storage::append("log_messages", "LOG: You Should never see this message", 50, 0);
-    return MOVE_STRAIGHT;
+
+    }
+#endif
 }
 

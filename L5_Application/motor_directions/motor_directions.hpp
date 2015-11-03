@@ -12,7 +12,7 @@
 
 
 //need to update this value based on sensor controller data
-#define  SENSOR_THRESHOLD 1000
+#define  SENSOR_THRESHOLD 40
 #define MOVE_STRAIGHT 0
 #define MOVE_RIGHT 1
 #define MOVE_LEFT 2

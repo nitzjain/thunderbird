@@ -8,20 +8,19 @@
 #include "string.h"
 #include "io.hpp"
 
+
 typedef enum direction {
-
-    straight = 0X120,
-    left = 0x122,
-    right = 0X123,
-    stop = 0X124,
-    reverse = 0X121,
-
-}direction_t;
+    straight = 0X020,
+    left = 0x021,
+    right = 0X022,
+    stop = 0X023,
+    reverse = 0X024,
+};
 const int switchdebounce = 1; // 50 ns debounce delay must be present. adjust value based on periodic task.
 const can_t mycan = can1;
 void testmotorwithswitch()
 {
-            static int debounce = 0;
+            static int debounce = 1;
             if(debounce == switchdebounce)
             {
                 can_msg_t msg;
@@ -42,7 +41,7 @@ void testmotorwithswitch()
                 }
                 else if(SW.getSwitch(2))
                 {
-                    msg.msg_id = right;
+                    msg.msg_id = stop;
                     if(CAN_tx(mycan,&msg,100)) {
                      printf("Right\n");
                    }
@@ -65,5 +64,5 @@ void testmotorwithswitch()
 
                 }
             }
-            debounce = ( debounce + 1 ) % (switchdebounce +1);
+            //debounce = ( debounce + 1 ) % (switchdebounce +1);
 }

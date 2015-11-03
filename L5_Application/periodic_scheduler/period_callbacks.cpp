@@ -36,8 +36,10 @@
 #include "file_logger.h"
 #include "eint.h"
 #include "utilities.h"
+#include "can.h"
 
-
+extern uint8_t Sen_val[3];
+extern can_msg_t msg1;
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -45,23 +47,42 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
 void period_1Hz(void)
 {
-    //LE.toggle(1);
-   // trigger_LeftSensor();
-
-   // eint3_enable_port2(0, eint_rising_edge, leftSensorRiseEdge);
-
+    LE.off(1);
+    LE.off(2);
+    LE.off(3);
 }
 
 void period_10Hz(void)
 {
+        Sen_val[0]=GetLeftSensorReading();
+        if(Sen_val[0]<40)
+        {
+            LE.toggle(1);
+        }
+        Sen_val[1]=GetMidSensorReading();
+        if(Sen_val[1]<40)
+            {
+                LE.toggle(2);
+            }
+        Sen_val[2]=GetRightSensorReading();
+        if(Sen_val[2]<40)
+            {
+                LE.toggle(3);
+            }
 
-   // routine();
-    LE.toggle(2);
+        CAN_tx(can1, &msg1, portMAX_DELAY);
+
+        //        printf("Reading LEFT is: %i\n",Sen_val[0]);
+//        printf("Reading MID is: %i\n",Sen_val[1]);
+//        printf("Reading RIGHT is: %i\n",Sen_val[2]);
+        //delay_ms(1);
+
 }
 
 void period_100Hz(void)
 {
-   // LE.toggle(3);
+
+
 }
 
 void period_1000Hz(void)

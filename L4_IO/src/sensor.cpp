@@ -32,7 +32,7 @@
 #include "uart2.hpp"
 #include "eint.h"
 
-int SysTimeL=0; int start_time =0; int PW_Left=0; int LeftSensorDistance = 0;
+int SysTimeL=0; int start_time =0; int PW_Left=0; int PW_Right; int PW_Mid; int LeftSensorDistance = 0;
 int end_time;
 
 
@@ -60,7 +60,7 @@ void eintCallbackleft_Rise()
 void eintCallbackleft_Fall()
 {
     PW_Left = ((int) sys_get_uptime_us() - start_time)/147;
-    delay_ms(50);
+  //  delay_ms(50);
 
 }
 
@@ -68,14 +68,13 @@ void eintCallbackleft_Fall()
 int GetLeftSensorReading()
 {
     int i=0;  int leftSenVal[10];
-    delay_ms(250);
-    InitInterruptLeft();
+
     trigger_LeftSensor();
         while(i<10)
         {
             leftSenVal[i]=PW_Left;
-            delay_ms(10);
-            printf("%i left value is: %i\n ",i,leftSenVal[i]);
+           // delay_ms(10);
+           // printf("%i left value is: %i\n ",i,leftSenVal[i]);
             i++;
         }
         LPC_GPIO2->FIOCLR = (1 << 0);
@@ -109,7 +108,7 @@ void eintCallbackright_Rise()
 
 void eintCallbackright_Fall()
 {
-    PW_Left = ((int) sys_get_uptime_us() - start_time)/147;
+    PW_Right= ((int) sys_get_uptime_us() - start_time)/147;
     //delay_ms(50);
 
 }
@@ -118,15 +117,13 @@ int GetRightSensorReading()
 {
     int i=0;  int rightSenVal[10];
   //  delay_ms(250);
-    InitInterruptRight();
-    trigger_RightSensor();
+     trigger_RightSensor();
 
         while(i<10)
         {
-            rightSenVal[i] = PW_Left;
-            delay_ms(10);
-            printf("%i Right value is: %i\n ",i,rightSenVal[i]);
-
+            rightSenVal[i] = PW_Right;
+           // delay_ms(10);
+           // printf("%i Right value is: %i\n ",i,rightSenVal[i]);
             i++;
         }
         LPC_GPIO2->FIOCLR = (1 << 4);
@@ -158,7 +155,7 @@ void eintCallbackmid_Rise()
 
 void eintCallbackmid_Fall()
 {
-    PW_Left = ((int) sys_get_uptime_us() - start_time)/147;
+    PW_Mid = ((int) sys_get_uptime_us() - start_time)/147;
   //  delay_ms(50);
 
 }
@@ -166,16 +163,13 @@ void eintCallbackmid_Fall()
 int GetMidSensorReading()
 {
     int i=0;  int MidSenVal[10];
-//    delay_ms(250);
-    InitInterruptMid();
     trigger_MidSensor();
 
         while(i<10)
         {
-            MidSenVal[i]=PW_Left;
-            delay_ms(10);
-            printf("%i Mid value is: %i\n ",i,MidSenVal[i]);
-
+            MidSenVal[i]=PW_Mid;
+//            delay_ms(10);
+//            printf("%i Mid value is: %i\n ",i,MidSenVal[i]);
             i++;
         }
        // printf("element is %i\n",leftSenVal[9]);

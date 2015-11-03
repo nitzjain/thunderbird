@@ -53,50 +53,6 @@ unsigned int valueNeeded;
 #define SL    5
 #define SR    8
 
-#if 0
-class MotorController1: public SingletonTemplate<MotorController1>
-{
-    public:
-
-    void setDriveMotor(float v)
-    {
-        mDriveMotor.set(v);
-    }
-    private:
-    PWM mDriveMotor;
-
-    MotorController1() :
-    mDriveMotor(PWM::pwm1, 50)
-    {
-
-    }
-    friend class SingletonTemplate<MotorController1>;
-    ///< Friend class used for Singleton Tem
-
-};
-
-class MotorController2: public SingletonTemplate<MotorController2>
-{
-    public:
-    void setSteerMotor(float v)
-    {
-        mSteerMotor.set(v);
-    }
-
-    private:
-    PWM mSteerMotor;
-
-    MotorController2() :
-    mSteerMotor(PWM::pwm2, 50)
-    {
-
-    }
-    friend class SingletonTemplate<MotorController2>;
-    ///< Friend class used for Singleton Tem
-
-};
-
-#endif
 
 class MotorController: public SingletonTemplate<MotorController>
 {
@@ -108,7 +64,6 @@ class MotorController: public SingletonTemplate<MotorController>
         }
     private:
         PWM mDriveMotor;
-       // PWM mSteerMotor;
 
         MotorController() : mDriveMotor(PWM::pwm1)//, mSteerMotor(PWM::pwm2)
         {
@@ -119,7 +74,6 @@ class MotorController: public SingletonTemplate<MotorController>
         ///< Friend class used for Singleton Template
 };
 
-//MotorController &M = MotorController::getInstance();
 
 class MotorController2: public SingletonTemplate<MotorController2>
 {
@@ -137,16 +91,13 @@ class MotorController2: public SingletonTemplate<MotorController2>
 
     }
     friend class SingletonTemplate<MotorController2>;
-    ///< Friend class used for Singleton Tem
+    ///< Friend class used for Singleton Template
 
 };
 
 void period_1Hz(void)
 {
-    //LE.off(1);
-    //LE.off(2);
-    //LE.off(3);
-    //LE.off(4);
+
 }
 
 void period_10Hz(void)
@@ -158,15 +109,13 @@ void period_100Hz(void)
 {
     MotorController &M = MotorController::getInstance();
     MotorController2 &M2 = MotorController2::getInstance();
-    //should test in 1Hz
-    static int flag = 0;
 
+    /*Initializing DC motor*/
+    static int flag = 0;
     if (flag == 0)
     {
         M.setDriveMotor(7.5); //Initialize the motor
         M2.setSteerMotor(7);
-        printf("Initialzed");
-        // M.setDriveMotor(up); //Move forward
         flag++;
     }
 
@@ -175,7 +124,7 @@ void period_100Hz(void)
     {
         if (control.msg_id == forward) //go forward - 000
         {
-            M.setDriveMotor(up); //Move forward
+            M.setDriveMotor(up);
             M2.setSteerMotor(7);
              LE.toggle(1);
         }

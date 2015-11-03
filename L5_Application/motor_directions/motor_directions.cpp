@@ -12,27 +12,32 @@
 
 char direction_computation(int s1, int s2, int s3, int s4)
 {
-    if(s1 >= SENSOR_THRESHOLD && s2>=SENSOR_THRESHOLD && s3>=SENSOR_THRESHOLD)
+    if(s1 >= SENSOR_THRESHOLD && s2 >= SENSOR_THRESHOLD && s3 >= SENSOR_THRESHOLD)
           return MOVE_STRAIGHT; // it should follow GPS co ordinates
-    else if(s1>=SENSOR_THRESHOLD && s2>=SENSOR_THRESHOLD && s3<SENSOR_THRESHOLD)
-           return MOVE_LEFT;
+    else if(s1 >= SENSOR_THRESHOLD && s2>=SENSOR_THRESHOLD && s3 < SENSOR_THRESHOLD)
+           return MOVE_STRAIGHT;
     else if(s1 >= SENSOR_THRESHOLD && s2 < SENSOR_THRESHOLD && s3  >= SENSOR_THRESHOLD)
               return MOVE_RIGHT;
     else if(s1 >= SENSOR_THRESHOLD &&  s2 < SENSOR_THRESHOLD && s3 < SENSOR_THRESHOLD)
               return MOVE_LEFT;
-    else if(s1 < SENSOR_THRESHOLD && s2>=SENSOR_THRESHOLD && s3>=SENSOR_THRESHOLD)
-              return MOVE_RIGHT;
+    else if(s1 < SENSOR_THRESHOLD && s2 >= SENSOR_THRESHOLD && s3 >= SENSOR_THRESHOLD)
+              return MOVE_STRAIGHT;
     else if(s1 < SENSOR_THRESHOLD && s2 >= SENSOR_THRESHOLD && s3 < SENSOR_THRESHOLD)
-              return MOVE_REVERSE;
+              return MOVE_STRAIGHT;
     else if(s1 < SENSOR_THRESHOLD && s2 < SENSOR_THRESHOLD && s3 >= SENSOR_THRESHOLD)
               return MOVE_RIGHT;
-    else if(s1 < SENSOR_THRESHOLD && s2 < SENSOR_THRESHOLD && s3 < SENSOR_THRESHOLD) {
-         if (s4 >=  SENSOR_THRESHOLD)
+    else if(s1 < SENSOR_THRESHOLD && s2 < SENSOR_THRESHOLD && s3 < SENSOR_THRESHOLD)
+                return STOP;
+#if 0
+    {
+         //enable after the demo
+           if (s4 >=  SENSOR_THRESHOLD)
                  return MOVE_REVERSE;
          else
                  return STOP;
-    }
 
+    }
+#endif
 }
 
 

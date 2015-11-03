@@ -22,10 +22,10 @@ class motor_input: public scheduler_task
     private:
     public:
         motor_input(uint8_t priority) :
-                scheduler_task("Motor input", 1024, priority)
-        {
-                //NOTHING
-        }
+            scheduler_task("Motor input", 1024, priority)
+    {
+            //NOTHING
+    }
 
         bool init()
         {
@@ -61,7 +61,6 @@ class motor_input: public scheduler_task
 
             if (dir == STOP)
                 msg.msg_id = stop;
-
             if(CAN_tx(mycan,&msg,100))
             {
 

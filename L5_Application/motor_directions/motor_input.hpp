@@ -56,7 +56,10 @@ class motor_input: public scheduler_task
             if (dir == MOVE_LEFT)
                 msg.msg_id = left;
 
-            if (dir == MOVE_LEFT)
+            if (dir == MOVE_REVERSE)
+                msg.msg_id = reverse; // reverse and take left -- should be done by motor
+
+            if (dir == STOP)
                 msg.msg_id = stop;
 
             if(CAN_tx(mycan,&msg,100))

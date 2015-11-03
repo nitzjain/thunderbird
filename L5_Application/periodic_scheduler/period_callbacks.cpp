@@ -70,9 +70,15 @@ void period_10Hz(void)
                 LE.toggle(3);
             }
 
+           msg1.msg_id = 0x001;
+           msg1.frame_fields.data_len = 3;
+           msg1.data.bytes[0] = Sen_val[0];
+           msg1.data.bytes[1] = Sen_val[1];
+           msg1.data.bytes[2] = Sen_val[2];
+
         CAN_tx(can1, &msg1, portMAX_DELAY);
 
-        //        printf("Reading LEFT is: %i\n",Sen_val[0]);
+//        printf("Reading LEFT is: %i\n",Sen_val[0]);
 //        printf("Reading MID is: %i\n",Sen_val[1]);
 //        printf("Reading RIGHT is: %i\n",Sen_val[2]);
         //delay_ms(1);

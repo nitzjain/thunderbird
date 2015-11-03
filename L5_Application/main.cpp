@@ -37,8 +37,6 @@
 
 uint8_t Sen_val[3];
 
-
-
 can_msg_t msg1, msg2;
 #if 0
 class CanBus : public scheduler_task
@@ -47,42 +45,43 @@ class CanBus : public scheduler_task
     private:
 
     public:
-           CanBus(uint8_t priority) :
-        scheduler_task("CanBus", 3000, priority)
-        {
+    CanBus(uint8_t priority) :
+    scheduler_task("CanBus", 3000, priority)
+    {
         /* Nothing to init */
-        }
+    }
 
-        bool init(void) {
-            CAN_init(can1, 100, 100, 100, 0, 0);
-            CAN_reset_bus(can1);
-            CAN_bypass_filter_accept_all_msgs();
-            memset(&msg1,0,sizeof(msg1));
-           // memset(&msg2,0,sizeof(msg1));
-            msg1.msg_id = 0x001;
-           // msg.frame_fields.is_29bit = 0;
-            msg1.frame_fields.data_len = 3;       // Send 3 bytes
-            msg1.data.bytes[0] = Sen_val[0];
-            msg1.data.bytes[1] = Sen_val[1];
-            msg1.data.bytes[2] = Sen_val[2];
+    bool init(void)
+    {
+        CAN_init(can1, 100, 100, 100, 0, 0);
+        CAN_reset_bus(can1);
+        CAN_bypass_filter_accept_all_msgs();
+        memset(&msg1,0,sizeof(msg1));
+        // memset(&msg2,0,sizeof(msg1));
+        msg1.msg_id = 0x001;
+        // msg.frame_fields.is_29bit = 0;
+        msg1.frame_fields.data_len = 3;// Send 3 bytes
+        msg1.data.bytes[0] = Sen_val[0];
+        msg1.data.bytes[1] = Sen_val[1];
+        msg1.data.bytes[2] = Sen_val[2];
 
 //            msg2.msg_id = 0x010;
 //          // msg.frame_fields.is_29bit = 0;
 //            msg2.frame_fields.data_len = 8;       // Send 8 bytes
 //            msg2.data.qword = 0x0000000000000001; // Write all 8 bytes of data at once
-            return true;
-        }
+        return true;
+    }
 
-        bool run(void *p)
-        {
-            int ret;
+    bool run(void *p)
+    {
+        int ret;
 
 //            printf("%d",CAN_is_bus_off(can1));
 
-           // ret = CAN_init(can1, 100, 10, 10, 0, 0);
-            //printf("ret val INIT is: %i\n",ret);
+        // ret = CAN_init(can1, 100, 10, 10, 0, 0);
+        //printf("ret val INIT is: %i\n",ret);
 
-            CAN_tx(can1, &msg1, portMAX_DELAY);
+        CAN_tx(can1, &msg1, portMAX_DELAY);
 
 //            if(SW.getSwitch(1))
 //            {
@@ -97,53 +96,50 @@ class CanBus : public scheduler_task
 //            printf("ret val TX with swich off is:  %i\n",ret);
 //
 //            vTaskDelay(100);
-            return true;
-        }
+        return true;
+    }
 };
 #endif
 
 void CAN_INIT()
 {
     CAN_init(can1, 100, 100, 100, 0, 0);
-                           CAN_reset_bus(can1);
-                           CAN_bypass_filter_accept_all_msgs();
-                           memset(&msg1,0,sizeof(msg1));
-                           msg1.msg_id = 0x001;
-                           msg1.frame_fields.data_len = 1;
-                           msg1.data.bytes[0] = Sen_val[0];
-                          // msg1.data.bytes[1] = Sen_val[1];
-                         //  msg1.data.bytes[2] = Sen_val[2];
-                           printf("CAN initialized");
-
-
+    CAN_reset_bus(can1);
+    CAN_bypass_filter_accept_all_msgs();
+    memset(&msg1, 0, sizeof(msg1));
+    msg1.msg_id = 0x001;
+    msg1.frame_fields.data_len = 3;
+    msg1.data.bytes[0] = Sen_val[0];
+    msg1.data.bytes[1] = Sen_val[1];
+    msg1.data.bytes[2] = Sen_val[2];
+    printf("CAN initialized");
 }
 
-class Sensor : public scheduler_task
+class Sensor: public scheduler_task
 {
     public:
         Sensor(uint8_t priority) :
-            scheduler_task("Sensor_Task", 4096, priority)
+                scheduler_task("Sensor_Task", 4096, priority)
         {
             CAN_init(can1, 100, 100, 100, 0, 0);
-                       CAN_reset_bus(can1);
-                       CAN_bypass_filter_accept_all_msgs();
-                       memset(&msg1,0,sizeof(msg1));
-                       msg1.msg_id = 0x001;
-                       msg1.frame_fields.data_len = 1;
-                       msg1.data.bytes[0] = Sen_val[0];
-                      // msg1.data.bytes[1] = Sen_val[1];
-                     //  msg1.data.bytes[2] = Sen_val[2];
+            CAN_reset_bus(can1);
+            CAN_bypass_filter_accept_all_msgs();
+            memset(&msg1, 0, sizeof(msg1));
+            msg1.msg_id = 0x001;
+            msg1.frame_fields.data_len = 1;
+            msg1.data.bytes[0] = Sen_val[0];
+            // msg1.data.bytes[1] = Sen_val[1];
+            //  msg1.data.bytes[2] = Sen_val[2];
         }
 
         bool run(void *p)
         {
 
-            Sen_val[0]=GetLeftSensorReading();
- //           Sen_val[1]=GetMidSensorReading();
+            Sen_val[0] = GetLeftSensorReading();
+            //           Sen_val[1]=GetMidSensorReading();
 //            Sen_val[2]=GetRightSensorReading();
 
-
-            printf("Reading LEFT is: %i\n",Sen_val[0]);
+            printf("Reading LEFT is: %i\n", Sen_val[0]);
 //            printf("Reading MID is: %i\n",Sen_val[1]);
 //            printf("Reading RIGHT is: %i\n",Sen_val[2]);
             CAN_tx(can1, &msg1, portMAX_DELAY);
@@ -168,7 +164,7 @@ class Sensor : public scheduler_task
  */
 int main(void)
 {
-    delay_ms(250);      //sensor RX pin requires 250 ms after start-up to get activated
+    delay_ms(250); //sensor RX pin requires 250 ms after start-up to get activated
 
     InitInterruptLeft();
     InitInterruptMid();
@@ -176,27 +172,24 @@ int main(void)
 
     CAN_INIT();
 
+    /* while(1){
 
-   /* while(1){
+     Sen_val[0]=GetLeftSensorReading();
+     delay_ms(10);
+     Sen_val[1]=GetMidSensorReading();
+     delay_ms(10);
+     Sen_val[2]=GetRightSensorReading();
+     delay_ms(10);
 
-    Sen_val[0]=GetLeftSensorReading();
-    delay_ms(10);
-    Sen_val[1]=GetMidSensorReading();
-      delay_ms(10);
-   Sen_val[2]=GetRightSensorReading();
-          delay_ms(10);
+     printf("Reading LEFT is: %i\n",Sen_val[0]);
+     printf("Reading MID is: %i\n",Sen_val[1]);
+     printf("Reading RIGHT is: %i\n",Sen_val[2]);
 
-   printf("Reading LEFT is: %i\n",Sen_val[0]);
-   printf("Reading MID is: %i\n",Sen_val[1]);
-   printf("Reading RIGHT is: %i\n",Sen_val[2]);
+     delay_ms(1000);
 
-    delay_ms(1000);
+     }*/
 
-    }*/
-
-
-
-       /**
+    /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.
      *      2.  Remote task allows you to use remote control to interact with the board.
@@ -206,19 +199,16 @@ int main(void)
      * such that it can save remote control codes to non-volatile memory.  IR remote
      * control codes can be learned by typing the "learn" terminal command.
      */
-   // scheduler_add_task(new terminalTask(PRIORITY_HIGH));
-
+    // scheduler_add_task(new terminalTask(PRIORITY_HIGH));
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
     //cheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
-
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 1
+#if 1
     scheduler_add_task(new periodicSchedulerTask());
-    #endif
+#endif
 
     /* The task for the IR receiver */
     // scheduler_add_task(new remoteTask  (PRIORITY_LOW));
-
     /* Your tasks should probably used PRIORITY_MEDIUM or PRIORITY_LOW because you want the terminal
      * task to always be responsive so you can poke around in case something goes wrong.
      */
@@ -227,37 +217,37 @@ int main(void)
      * This is a the board demonstration task that can be used to test the board.
      * This also shows you how to send a wireless packets to other boards.
      */
-    #if 0
-        scheduler_add_task(new example_io_demo());
-    #endif
+#if 0
+    scheduler_add_task(new example_io_demo());
+#endif
 
     /**
      * Change "#if 0" to "#if 1" to enable examples.
      * Try these examples one at a time.
      */
-    #if 0
-        scheduler_add_task(new example_task());
-        scheduler_add_task(new example_alarm());
-        scheduler_add_task(new example_logger_qset());
-        scheduler_add_task(new example_nv_vars());
-    #endif
+#if 0
+    scheduler_add_task(new example_task());
+    scheduler_add_task(new example_alarm());
+    scheduler_add_task(new example_logger_qset());
+    scheduler_add_task(new example_nv_vars());
+#endif
 
     /**
-	 * Try the rx / tx tasks together to see how they queue data to each other.
-	 */
-    #if 0
-        scheduler_add_task(new queue_tx());
-        scheduler_add_task(new queue_rx());
-    #endif
+     * Try the rx / tx tasks together to see how they queue data to each other.
+     */
+#if 0
+    scheduler_add_task(new queue_tx());
+    scheduler_add_task(new queue_rx());
+#endif
 
     /**
      * Another example of shared handles and producer/consumer using a queue.
      * In this example, producer will produce as fast as the consumer can consume.
      */
-    #if 0
-        scheduler_add_task(new producer());
-        scheduler_add_task(new consumer());
-    #endif
+#if 0
+    scheduler_add_task(new producer());
+    scheduler_add_task(new consumer());
+#endif
 
     /**
      * If you have RN-XV on your board, you can connect to Wifi using this task.
@@ -271,33 +261,33 @@ int main(void)
      *     addCommandChannel(Uart3::getInstance(), false);
      * @endcode
      */
-    #if 0
-        Uart3 &u3 = Uart3::getInstance();
-        u3.init(WIFI_BAUD_RATE, WIFI_RXQ_SIZE, WIFI_TXQ_SIZE);
-        scheduler_add_task(new wifiTask(Uart3::getInstance(), PRIORITY_LOW));
-    #endif
+#if 0
+    Uart3 &u3 = Uart3::getInstance();
+    u3.init(WIFI_BAUD_RATE, WIFI_RXQ_SIZE, WIFI_TXQ_SIZE);
+    scheduler_add_task(new wifiTask(Uart3::getInstance(), PRIORITY_LOW));
+#endif
 
+    // CAN_tx(can1, &msg, portMAX_DELAY);
 
-  // CAN_tx(can1, &msg, portMAX_DELAY);
-
-  // scheduler_add_task(new CanBus(PRIORITY_HIGH)); //for can
-       // printf("This is before task call");
+    // scheduler_add_task(new CanBus(PRIORITY_HIGH)); //for can
+    // printf("This is before task call");
     //    scheduler_add_task(new Sensor(PRIORITY_HIGH)); //this one
-       // printf("This is after task call");
+    // printf("This is after task call");
 
 #if 0
-        float reading = 0;
+    float reading = 0;
 
-            // Initialization :
-            LPC_PINCON->PINSEL3 |=  (3 << 28); // ADC-4 is on P1.30, select this as ADC0.4
+    // Initialization :
+    LPC_PINCON->PINSEL3 |= (3 << 28);// ADC-4 is on P1.30, select this as ADC0.4
 
-            while(1) {
-                reading = adc0_get_reading(4); // Read current value of ADC-4
-                printf("\nADC Reading: %f", reading/6.44);
-                delay_ms(1000);
-            }
+    while(1)
+    {
+        reading = adc0_get_reading(4); // Read current value of ADC-4
+        printf("\nADC Reading: %f", reading/6.44);
+        delay_ms(1000);
+    }
 
-            return 0;
+    return 0;
 #endif
 
     scheduler_start(); ///< This shouldn't return

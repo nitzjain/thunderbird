@@ -53,8 +53,7 @@ unsigned int valueNeeded;
 #define SL    5
 #define SR    8
 
-
-class MotorController: public SingletonTemplate<MotorController>
+class DC_Motor: public SingletonTemplate<DC_Motor>
 {
     public:
 
@@ -65,33 +64,34 @@ class MotorController: public SingletonTemplate<MotorController>
     private:
         PWM mDriveMotor;
 
-        MotorController() : mDriveMotor(PWM::pwm1)//, mSteerMotor(PWM::pwm2)
+        DC_Motor() :
+                mDriveMotor(PWM::pwm1) //, mSteerMotor(PWM::pwm2)
         {
 
         }
 
-        friend class SingletonTemplate<MotorController> ;
+        friend class SingletonTemplate<DC_Motor> ;
         ///< Friend class used for Singleton Template
 };
 
-
-class MotorController2: public SingletonTemplate<MotorController2>
+class Steer_Motor: public SingletonTemplate<Steer_Motor>
 {
     public:
-    void setSteerMotor(float v)
-    {
-        mSteerMotor.set(v);
-    }
+        void setSteerMotor(float v)
+        {
+            mSteerMotor.set(v);
+        }
 
     private:
-    PWM mSteerMotor;
+        PWM mSteerMotor;
 
-    MotorController2() : mSteerMotor(PWM::pwm2)
-    {
+        Steer_Motor() :
+                mSteerMotor(PWM::pwm2)
+        {
 
-    }
-    friend class SingletonTemplate<MotorController2>;
-    ///< Friend class used for Singleton Template
+        }
+        friend class SingletonTemplate<Steer_Motor> ;
+        ///< Friend class used for Singleton Template
 
 };
 
@@ -105,52 +105,54 @@ void period_10Hz(void)
 
 }
 
+// the globalk space
+
 void period_100Hz(void)
 {
-    MotorController &M = MotorController::getInstance();
-    MotorController2 &M2 = MotorController2::getInstance();
+    DC_Motor &dc_motor_instance = DC_Motor::getInstance();
+    Steer_Motor &steer = Steer_Motor::getInstance();
 
     /*Initializing DC motor*/
     static int flag = 0;
     if (flag == 0)
     {
-        M.setDriveMotor(7.5); //Initialize the motor
-        M2.setSteerMotor(7);
+        dc_motor_instance.setDriveMotor(7.5); //Initialize the motor
+        steer.setSteerMotor(7);
         flag++;
     }
 
     /* Move forward - */
-    if (CAN_rx(can1, &control, 1))
+    while (CAN_rx(can1, &control, 1))
     {
         if (control.msg_id == forward) //go forward - 000
         {
-            M.setDriveMotor(up);
-            M2.setSteerMotor(7);
-             LE.toggle(1);
+            dc_motor_instance.setDriveMotor(up);
+            steer.setSteerMotor(7);
+            LE.toggle(1);
         }
         else if (control.msg_id == left) //go left 001, 011
         {
-            M2.setSteerMotor(SL);
-            M.setDriveMotor(up_L);
-             LE.on(2);
+            steer.setSteerMotor(SL);
+            dc_motor_instance.setDriveMotor(up_L);
+            LE.on(2);
         }
         else if (control.msg_id == right) //go right 010, 100, 110
         {
-            M2.setSteerMotor(SR);
-            M.setDriveMotor(up_R);
+            steer.setSteerMotor(SR);
+            dc_motor_instance.setDriveMotor(up_R);
             LE.on(3);
         }
         else if (control.msg_id == reverse) //go back 111, 101
         {
-            M.setDriveMotor(7.5);
-            M.setDriveMotor(down);
-            M2.setSteerMotor(SR);
+            dc_motor_instance.setDriveMotor(7.5);
+            dc_motor_instance.setDriveMotor(down);
+            steer.setSteerMotor(SR);
             LE.toggle(4);
         }
         else if (control.msg_id == stop)
         {
-            M.setDriveMotor(7.5);
-            M2.setSteerMotor(7);
+            dc_motor_instance.setDriveMotor(7.5);
+            steer.setSteerMotor(7);
         }
     }
 }

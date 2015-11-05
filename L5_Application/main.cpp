@@ -51,50 +51,49 @@ This is the gpssensor branch
 
 
 
-class gps_task : public scheduler_task
-{
-    public:
-        gps_task(uint8_t priority) :
-            scheduler_task("gps_task", 2048, priority),
-            gps_uart(Uart2::getInstance()),
-            gps_data_q(NULL)
-        {
-            gps_uart.init(9600, gps_rx_q_size, 1);
+/*class Gps_task: public scheduler_task
+{  private:
+        Uart2 &Gps_uart;
+
+
+    public: int c=0;
+            char rxb[100];
+            char *tx[100];
+        Gps_task(uint8_t priority):scheduler_task("Gps_task",2048,priority),
+            Gps_uart(Uart2::getInstance())
+    {
+        Gps_uart.init(9600,0,0);
+
+
+    }
+
+    double longitude,latitude;
+    bool run(void *p)
+    {
+
+
+        if(c<1)
+        { sprintf(*tx,"A0 A1 00 02 04 01 04 0D 0A");
+        Gps_uart.put(*tx,10);
+             LE.on(2);
         }
 
-        bool init(void)
-        {
-            gps_data_q = xQueueCreate(2, sizeof(gps_data_t));
-            addSharedObject("gps_queue", gps_data_q);
-            return (NULL != gps_data_q);
-        }
+        else if(!(Gps_uart.gets(rxb, sizeof(rxb),2000)))
+                   {
+                       LE.on(1);
+                   }
+                   else
+                       {
+                       sscanf(rxb,"%*s,%f,%f",longitude,latitude);
+                       printf("longitude = %f\n latitude =%f \n\n", longitude,latitude);
+                       LE.off(1);
 
-        bool run(void *p)
-        {
-            char buffer[100];
-            if( gps_uart.gets(buffer, sizeof(buffer), 1000)) {
+                       }
+        c++;
+     return true ;
 
-                sscanf(buffer,"%*s,%f,%f", &gps_data.longitude, &gps_data.latitude);
-
-                if (!xQueueSend(gps_data_q, &gps_data, 0)) {
-                    LOG_ERROR("Error:Queue send ");
-
-                }
-            }
-            else {
-                LE.on(1);
-            }
-
-            return true;
-        }
-
-    private:
-        Uart2 &gps_uart;
-        QueueHandle_t gps_data_q;
-        gps_data_t gps_data;
-        static const int gps_rx_q_size = 100;
-};
-
+    }
+};*/
 int main(void)
 {
     /**
@@ -108,10 +107,10 @@ int main(void)
      * control codes can be learned by typing the "learn" terminal command.
      */
     scheduler_add_task(new terminalTask(PRIORITY_HIGH));
-    scheduler_add_task(new gps_task(PRIORITY_MEDIUM));
+
   //  scheduler_add_task(new compass(PRIORITY_MEDIUM));
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
-    scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
+    //scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
     #if 0

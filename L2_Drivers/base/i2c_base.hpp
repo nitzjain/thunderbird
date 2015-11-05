@@ -68,10 +68,15 @@
 class I2C_Base
 {
     public:
+
+        void initMaster(int SlaveAddr, int *rx_buff, int *tx_buff);
         /**
+         *
+
          * When the I2C interrupt occurs, this function should be called to handle
          * future action to take due to the interrupt cause.
          */
+
         void handleInterrupt();
 
         /**

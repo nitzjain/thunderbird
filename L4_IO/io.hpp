@@ -36,7 +36,7 @@
 #include "light_sensor.hpp"
 #include "switches.hpp"
 #include "temperature_sensor.hpp"
-
+#include "compass.hpp"
 
 /**
  * @{ Short-hand notation of getting to the on-board IO Devices
@@ -49,6 +49,7 @@
 #define LD      LED_Display::getInstance()         ///< 2-Digit LED Display
 #define LE      LED::getInstance()                 ///< 4 On-board LEDs
 #define SW      Switches::getInstance()            ///< 4 On-board Switches
+#define CO      compass::getInstance()
 /** @} */
 
 

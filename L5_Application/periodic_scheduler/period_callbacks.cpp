@@ -29,6 +29,7 @@
  */
 
 #include <stdint.h>
+#include "stdio.h"
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "gps_datatype.h"
@@ -46,21 +47,7 @@ void period_1Hz(void)
 
 void period_10Hz(void)
 {
-    static QueueHandle_t gps_data_q = scheduler_task::getSharedObject("gps_queue");
-    gps_data_t data;
 
-    // HACK:
-    data = *((gps_data_t*) scheduler_task::getSharedObject("gps_data"));
-
-    if (NULL == gps_data_q) {
-        //light_up_the_project_blown_led();
-    }
-    else if (xQueueReceive(gps_data_q, &data, 0))
-    {
-
-    }
-
-    LE.toggle(2);
 }
 void period_100Hz(void)
 {

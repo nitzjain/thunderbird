@@ -398,3 +398,10 @@ float I2C_Temp::getFarenheit()
     return (getCelsius() * 9.0F / 5) + 32;
 }
 
+
+
+bool I2C_comp::init()
+{
+
+    return true;
+}

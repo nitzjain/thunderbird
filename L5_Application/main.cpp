@@ -33,6 +33,7 @@ This is the gpssensor branch
 #include "io.hpp"
 #include "file_logger.h"
 #include "gps_datatype.h"
+#include "string.h"
 
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
@@ -48,54 +49,63 @@ This is the gpssensor branch
  *        In either case, you should avoid using this bus or interfacing to external components because
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
+#define gps_baudrate 38400
 
+class Gps_Task : public scheduler_task
+{
+    private:
+        Uart2 &gps_uart;
+        static const int rx_q = 100;
+        static const int tx_q = 100;
+        char * token[20];
+        char *temp;
+        int i = 0;
+        gps_data_t gps_values;
+    public:
+        Gps_Task(uint8_t priority) :
+            scheduler_task("Gps", 512*8, priority),
+            gps_uart(Uart2::getInstance())
+        {
+            gps_uart.init(gps_baudrate,rx_q,tx_q);
 
-
-/*class Gps_task: public scheduler_task
-{  private:
-        Uart2 &Gps_uart;
-
-
-    public: int c=0;
-            char rxb[100];
-            char *tx[100];
-        Gps_task(uint8_t priority):scheduler_task("Gps_task",2048,priority),
-            Gps_uart(Uart2::getInstance())
-    {
-        Gps_uart.init(9600,0,0);
-
-
-    }
-
-    double longitude,latitude;
-    bool run(void *p)
-    {
-
-
-        if(c<1)
-        { sprintf(*tx,"A0 A1 00 02 04 01 04 0D 0A");
-        Gps_uart.put(*tx,10);
-             LE.on(2);
         }
 
-        else if(!(Gps_uart.gets(rxb, sizeof(rxb),2000)))
-                   {
-                       LE.on(1);
-                   }
-                   else
-                       {
-                       sscanf(rxb,"%*s,%f,%f",longitude,latitude);
-                       printf("longitude = %f\n latitude =%f \n\n", longitude,latitude);
-                       LE.off(1);
+        bool run(void *p)
+        {
+            i = 0;
+            const char s[2] = ",";
+            char rx_buff[100];
+            char rx_str[100];
+            gps_uart.gets(rx_buff, sizeof(rx_buff), portMAX_DELAY);         //get data from GPS module
+            strcpy(rx_str,rx_buff);                                         //copy the GPS data to a temporary string
+            temp = strtok(rx_str,s);                                        //Separate the data by ','
+                while(temp!=NULL && i<20){
+                    token[i++] = temp;
+                    temp = strtok(NULL,s);
+                    printf("token%d is %s \n",i-1,token[i-1]);                //print the separated variables
+                }
 
-                       }
-        c++;
-     return true ;
+            sscanf(token[1],"%lf",&gps_values.UTC_time);
+            sscanf(token[2],"%lf",&gps_values.Latitude);
+            gps_values.NS_indicator = token[3];
+            sscanf(token[4],"%lf",&gps_values.Longitude);
+            gps_values.EW_indicator = token[4];
+            sscanf(token[6],"%d",&gps_values.GPS_qualty_indicator);
+            sscanf(token[7],"%d",&gps_values.Satelite_used);
+            sscanf(token[8],"%f",&gps_values.HDOP);
+            sscanf(token[9],"%lf",&gps_values.Altitude);
+            sscanf(token[13],"%f",&gps_values.HDOP);        //TODO: separate the values,2 values saperated by '*'
+            printf("NS: %s",gps_values.NS_indicator);
+            printf("LAT: %lf", gps_values.Latitude);
+            printf("LON: %lf",gps_values.Longitude);
 
-    }
-};*/
+            return true;
+        }
+};
+
 int main(void)
 {
+
     /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.
@@ -107,10 +117,10 @@ int main(void)
      * control codes can be learned by typing the "learn" terminal command.
      */
     scheduler_add_task(new terminalTask(PRIORITY_HIGH));
-
+    scheduler_add_task(new Gps_Task(PRIORITY_MEDIUM));
   //  scheduler_add_task(new compass(PRIORITY_MEDIUM));
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
-    //scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
+   scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
     #if 0

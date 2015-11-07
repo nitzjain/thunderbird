@@ -9,10 +9,19 @@
 #define L4_IO_GPS_DATATYPE_H_
 
 
-typedef struct gps_data_t
+typedef struct gps_data
 {
-   double latitude;
-   double longitude;
-}gps_data;
+   double UTC_time;
+   double Latitude;
+   char* NS_indicator;
+   double Longitude;
+   char* EW_indicator;
+   int GPS_qualty_indicator;
+   int Satelite_used;
+   float HDOP;
+   double Altitude;
+   int DGPS_statio_ID;
+   int checksum;
+}gps_data_t;
 
 #endif /* L4_IO_GPS_DATATYPE_H_ */

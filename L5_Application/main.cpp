@@ -61,6 +61,7 @@ class Gps_Task : public scheduler_task
         char *temp;
         int i = 0;
         gps_data_t gps_values;
+        QueueHandle_t gps_data_q;
     public:
         Gps_Task(uint8_t priority) :
             scheduler_task("Gps", 512*8, priority),
@@ -68,6 +69,11 @@ class Gps_Task : public scheduler_task
         {
             gps_uart.init(gps_baudrate,rx_q,tx_q);
 
+        }
+        bool init(void){
+            gps_data_q = xQueueCreate(2,sizeof(gps_data_t));
+            addSharedObject("gps_queue",gps_data_q);
+            return (NULL!=gps_data_q);
         }
 
         bool run(void *p)
@@ -82,7 +88,7 @@ class Gps_Task : public scheduler_task
                 while(temp!=NULL && i<20){
                     token[i++] = temp;
                     temp = strtok(NULL,s);
-                    printf("token%d is %s \n",i-1,token[i-1]);                //print the separated variables
+                    //printf("token%d is %s \n",i-1,token[i-1]);                //print the separated variables
                 }
 
             sscanf(token[1],"%lf",&gps_values.UTC_time);
@@ -95,10 +101,13 @@ class Gps_Task : public scheduler_task
             sscanf(token[8],"%f",&gps_values.HDOP);
             sscanf(token[9],"%lf",&gps_values.Altitude);
             sscanf(token[13],"%f",&gps_values.HDOP);        //TODO: separate the values,2 values saperated by '*'
-            printf("NS: %s",gps_values.NS_indicator);
-            printf("LAT: %lf", gps_values.Latitude);
-            printf("LON: %lf",gps_values.Longitude);
+            //printf("NS: %s",gps_values.NS_indicator);
+            //printf("LAT: %lf", gps_values.Latitude);
+            //printf("LON: %lf",gps_values.Longitude);
 
+            if(!xQueueSend(gps_data_q,&gps_values,0)){
+                LOG_ERROR("Not sending in the queuE");
+            }
             return true;
         }
 };
@@ -123,7 +132,7 @@ int main(void)
    scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 0
+    #if 1
     scheduler_add_task(new periodicSchedulerTask());
     #endif
 

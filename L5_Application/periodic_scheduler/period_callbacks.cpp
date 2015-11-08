@@ -47,6 +47,17 @@ void period_1Hz(void)
 
 void period_10Hz(void)
 {
+    static QueueHandle_t gps_data_q = scheduler_task::getSharedObject("gps_queue");
+    gps_data_t data;
+    if (NULL == gps_data_q) {
+
+        }
+        else if (xQueueReceive(gps_data_q, &data, 0))
+        {
+            printf("long: %lf",data.Longitude);
+
+        }
+
 
 }
 void period_100Hz(void)

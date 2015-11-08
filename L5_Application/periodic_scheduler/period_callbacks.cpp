@@ -37,6 +37,7 @@
 #include "singleton_template.hpp"
 #include "can_periodic/canperiodicext.hpp"
 #include "motor_directions/motor_directions.hpp"
+#include "MotorControl.hpp"
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -53,48 +54,6 @@ unsigned int valueNeeded;
 #define SL    5
 #define SR    8
 
-class DC_Motor: public SingletonTemplate<DC_Motor>
-{
-    public:
-
-        void setDriveMotor(float v)
-        {
-            mDriveMotor.set(v);
-        }
-    private:
-        PWM mDriveMotor;
-
-        DC_Motor() :
-                mDriveMotor(PWM::pwm1) //, mSteerMotor(PWM::pwm2)
-        {
-
-        }
-
-        friend class SingletonTemplate<DC_Motor> ;
-        ///< Friend class used for Singleton Template
-};
-
-class Steer_Motor: public SingletonTemplate<Steer_Motor>
-{
-    public:
-        void setSteerMotor(float v)
-        {
-            mSteerMotor.set(v);
-        }
-
-    private:
-        PWM mSteerMotor;
-
-        Steer_Motor() :
-                mSteerMotor(PWM::pwm2)
-        {
-
-        }
-        friend class SingletonTemplate<Steer_Motor> ;
-        ///< Friend class used for Singleton Template
-
-};
-
 void period_1Hz(void)
 {
 
@@ -104,9 +63,6 @@ void period_10Hz(void)
 {
 
 }
-
-// the globalk space
-
 void period_100Hz(void)
 {
     DC_Motor &dc_motor_instance = DC_Motor::getInstance();

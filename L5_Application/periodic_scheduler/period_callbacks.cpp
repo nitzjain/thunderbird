@@ -51,14 +51,11 @@ void period_10Hz(void)
     gps_data_t data;
     if (NULL == gps_data_q) {
 
-        }
-        else if (xQueueReceive(gps_data_q, &data, 0))
-        {
-            printf("long: %lf",data.Longitude);
-
-        }
-
-
+    }
+    else if (xQueueReceive(gps_data_q, &data, 0))
+    {
+        printf("longitude: %f",data.Longitude);
+    }
 }
 void period_100Hz(void)
 {

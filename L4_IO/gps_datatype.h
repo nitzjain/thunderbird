@@ -12,9 +12,9 @@
 typedef struct gps_data
 {
    double UTC_time;
-   double Latitude;
+   float Latitude;
    char* NS_indicator;
-   double Longitude;
+   float Longitude;
    char* EW_indicator;
    int GPS_qualty_indicator;
    int Satelite_used;

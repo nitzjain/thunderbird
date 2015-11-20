@@ -33,12 +33,6 @@
 #define I2C_WRITE_ADDR(addr)        (addr & 0xFE)   ///< Write address is EVEN
 #define I2C_READ_ADDR(addr)         (addr | 1)      ///< Read address is ODD
 
-void I2C_Base::initMaster(int SlaveAddr, int *rx_buff, int *tx_buff)
-{
-  //  mpI2CRegs->I2ADR2 = SlaveAddr;      //set compass address
-    mpI2CRegs->I2CONSET = 0x40;         //Initialize master
-    NVIC_EnableIRQ(mIRQ);
-}
 
 void I2C_Base::handleInterrupt()
 {
@@ -54,6 +48,7 @@ uint8_t I2C_Base::readReg(uint8_t deviceAddress, uint8_t registerAddress)
 {
     uint8_t byte = 0;
     readRegisters(deviceAddress, registerAddress, &byte, 1);
+
     return byte;
 }
 

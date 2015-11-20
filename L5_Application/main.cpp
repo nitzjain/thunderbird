@@ -92,9 +92,9 @@ class Gps_Task : public scheduler_task
                 }
 
             sscanf(token[1],"%lf",&gps_values.UTC_time);
-            sscanf(token[2],"%lf",&gps_values.Latitude);
+            sscanf(token[2],"%f",&gps_values.Latitude);
             gps_values.NS_indicator = token[3];
-            sscanf(token[4],"%lf",&gps_values.Longitude);
+            sscanf(token[4],"%f",&gps_values.Longitude);
             gps_values.EW_indicator = token[4];
             sscanf(token[6],"%d",&gps_values.GPS_qualty_indicator);
             sscanf(token[7],"%d",&gps_values.Satelite_used);
@@ -106,15 +106,61 @@ class Gps_Task : public scheduler_task
             //printf("LON: %lf",gps_values.Longitude);
 
             if(!xQueueSend(gps_data_q,&gps_values,0)){
-                LOG_ERROR("Not sending in the queuE");
+                LOG_ERROR("Not sending in the queue");
             }
             return true;
         }
 };
 
+class compass_task : public scheduler_task
+{
+    private:
+        bool init_status;
+        compass_data_t* comp_data, *comp_data_val;
+        int f = 0;
+    public:
+        compass_task(uint8_t priority) :
+            scheduler_task("compass", 512*4, priority)
+        {
+        }
+#if 0
+        bool init(void *p){
+            init_status = CO.init_compass();
+            //printf("INIT\n");
+            return true;
+        }
+#endif
+        bool run(void *p)
+        {
+            if(f == 0){
+                init_status = CO.init_compass();
+                if(init_status){
+                    printf("success");
+                }
+                f++;
+            }
+                //printf("running");
+
+            printf("RUN\n");
+#if 1
+            CO.get_compass_data();
+#else if
+            CO.loop();
+#endif
+            //printf("compass data = %s :",comp_data_val->x);
+            //printf("%s :",comp_data_val->y);
+            //printf("%s \n",comp_data_val->z);
+
+            return true;
+        }
+};
 int main(void)
 {
 
+    scheduler_add_task(new terminalTask(PRIORITY_HIGH));
+    //scheduler_add_task(new Gps_Task(PRIORITY_MEDIUM));
+    scheduler_add_task(new compass_task(PRIORITY_MEDIUM));
+    //scheduler_add_task(new compass(PRIORITY_MEDIUM));
     /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.
@@ -125,9 +171,10 @@ int main(void)
      * such that it can save remote control codes to non-volatile memory.  IR remote
      * control codes can be learned by typing the "learn" terminal command.
      */
-    scheduler_add_task(new terminalTask(PRIORITY_HIGH));
-    scheduler_add_task(new Gps_Task(PRIORITY_MEDIUM));
-  //  scheduler_add_task(new compass(PRIORITY_MEDIUM));
+
+
+
+
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
    scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 

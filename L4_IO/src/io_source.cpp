@@ -21,8 +21,11 @@
 #include "io.hpp" // All IO Class definitions
 #include "bio.h"
 #include "adc0.h"
-
-
+#include "utilities.h"
+#include "stdio.h"
+#include "i2c_base.hpp"
+#include "compass.hpp"
+#include "string.h"
 
 /**
  * The following diagram shows bit number corresponding to the LED
@@ -399,9 +402,115 @@ float I2C_Temp::getFarenheit()
 }
 
 
-
-bool I2C_comp::init()
+#if 1
+bool I2C_comp::init_compass()
 {
+    const unsigned char com_cfg_reg_a_ptr = 0x00;
+    const unsigned char com_cfg_samples = 0x70;
+    const unsigned char com_cfg_reg_b_ptr = 0x01;
+    const unsigned char com_cfg_gain = 0xA0;
+    const unsigned char com_mode_reg_ptr = 0x02;
+    const unsigned char com_mode_reg_cont = 0x00;
+
+    writeReg(com_cfg_reg_a_ptr,com_cfg_samples);        //set Config A reg for 8 samples and 15hx default mode
+    unsigned char buff0 = readReg(com_cfg_reg_a_ptr);   //get Config A reg value to verify the value set
+    writeReg(com_cfg_reg_b_ptr,com_cfg_gain);           //set Config B reg for gain
+    unsigned char buff1 = readReg(com_cfg_reg_b_ptr);   //get Config B reg value to verify the value set
+    writeReg(com_mode_reg_ptr,com_mode_reg_cont);       //set Mode reg for cont. measurement
+    unsigned char buff2 = readReg(com_mode_reg_ptr);     //get Mode reg value to verify the value set
+    delay_ms(6);                                        //required delay to update configuration
+
+    //if((com_cfg_samples == buff0) && (com_cfg_gain == buff1) && (com_mode_reg_cont == buff2)){ //verifying of the registers are set
+    //    printf("Success");
+        printf("CFG A %x, CFG B %x, Mode %x",readReg(com_cfg_reg_a_ptr),readReg(com_cfg_reg_b_ptr),readReg(com_mode_reg_ptr) );
+    //    while(readReg(0x03)!=0);
+        return true;
+    //}
+     //   else{
+      //      printf("Init registers are not set\n");
+     //       return false;
+      //  }
+}
+
+void I2C_comp::get_compass_data(){
+    //compass_data_t* c_data;
+    uint8_t* temp;
+    uint8_t buff[6];
+    const unsigned char data_out_x_msb = 0x03;
+    const unsigned char data_out_y_msb = 0x07;
+    const unsigned char data_out_z_msb = 0x05;
+    const unsigned char status_reg = 0x09;
+    const unsigned char com_mode_reg_ptr = 0x02;
+    const unsigned char com_mode_reg_cont = 0x00;
+    //uint16_t data_x,data_y=0,data_z=0;
+//if(readReg(status_reg)== 1){
+    writeReg(com_mode_reg_ptr,com_mode_reg_cont);       //set Mode reg for cont. measurement
+    char buff2 = readReg(com_mode_reg_ptr);     //get Mode reg value to verify the value set
+    delay_ms(10);
+    temp = getAllRegisters(0x03,buff);
+    //data_x = get16BitRegister(data_out_x_msb);
+    //data_y = get16BitRegister(data_out_y_msb);
+    //data_z = get16BitRegister(data_out_z_msb);
+    //char* data_y = &((char)get16BitRegister(data_out_y_msb));
+    //char* data_z = &((char)get16BitRegister(data_out_z_msb));
+    //sprintf(c_data->x,"%d",get16BitRegister(data_out_x_msb));
+    //c_data->x = &data_x;
+    //c_data->y = data_y;
+    //c_data->z = data_z;
+    printf("Mode Reg: %c\n", buff2);
+    printf("%u,%u,%u,%u,%u,%u",temp[0],temp[1],temp[2],temp[3],temp[4],temp[5]);
+    //printf("%d, %d, %d",~data_x+1,~data_y+1,~data_z+1);
+    //printf("%d, %d, %d",((!data_x)+1),((!data_y)+1),((!data_z)+1));
+    //printf("%s",c_data->x);
+    //delay_ms(67);
+//}
+//else
+//    printf("status reg is not reseted, %x",readReg(status_reg));
+
+    delay_ms(100);
+}
+#else if
+
+bool I2C_comp::init_compass()
+{
+    const unsigned char config_regA = 0x00;
+    const unsigned char config_regB = 0x01;
+    const unsigned char mode_reg = 0x02;
+    const unsigned char data_reg = 0x03;  // first data reg to point
+    uint32_t read_bytes = 0x06;
+
+   // uint8_t  *buff=&a[0];
+   writeReg(mode_reg,config_regB);
+     delay_ms(10);
+
+
+      // calculate 2's complement of databytes
+      // writeReg(data_reg,NULL);  // point again  to first data register 0x03
+       // delay of 67ms
+        //end loop
 
     return true;
 }
+
+bool I2C_comp::loop()
+{
+    compass_data_t c_axes;
+    uint8_t a[100];
+         a[0]= readReg(0x03);
+         a[1]= readReg(0x04);
+         a[2]= readReg(0x05);
+         a[3]= readReg(0x06);
+         a[4]= readReg(0x07);
+         a[5]= readReg(0x08);
+         c_axes.x = (a[0]<<8)|a[1];
+         c_axes.x= (~c_axes.x)+1;
+         c_axes.y = (a[2]<<8)|a[3];
+         c_axes.y= (~c_axes.x)+1;
+         c_axes.z = (a[4]<<8)|a[5];
+         c_axes.z= (~c_axes.z)+1;
+        printf("x=%d\t y=%d \t z=%d \n",c_axes.x,c_axes.y,c_axes.z);
+
+         delay_ms(100);
+return true;
+}
+#endif

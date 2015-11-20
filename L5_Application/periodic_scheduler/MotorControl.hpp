@@ -5,6 +5,10 @@
  *      Author: ajosyabhatla
  */
 
+#include "singleton_template.hpp"
+#include "can.h"
+#include "lpc_pwm.hpp"
+
 #ifndef L5_APPLICATION_PERIODIC_SCHEDULER_MOTORCONTROL_HPP_
 #define L5_APPLICATION_PERIODIC_SCHEDULER_MOTORCONTROL_HPP_
 

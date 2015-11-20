@@ -38,6 +38,9 @@
 #include "can_periodic/canperiodicext.hpp"
 #include "motor_directions/motor_directions.hpp"
 #include "MotorControl.hpp"
+#include "lpc_sys.h"
+
+#define distance 18  //This is the wheels circumference.
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -54,9 +57,16 @@ unsigned int valueNeeded;
 #define SL    5
 #define SR    8
 
+int start_time, elapsed_time;
+
 void period_1Hz(void)
 {
-
+    /*Speed check*/
+    //In progress - depending on the speed the motor will be controlled.
+    float speed = (distance * 1000 / elapsed_time);
+    printf("\nTime elapsed is %d ms", elapsed_time);
+    printf("\nSpeed is %0.2f cm/s", speed);
+    elapsed_time = 0;
 }
 
 void period_10Hz(void)
@@ -65,6 +75,8 @@ void period_10Hz(void)
 }
 void period_100Hz(void)
 {
+    //Should add the functionality to control the motor speed using the speed check
+
     DC_Motor &dc_motor_instance = DC_Motor::getInstance();
     Steer_Motor &steer = Steer_Motor::getInstance();
 
@@ -115,5 +127,14 @@ void period_100Hz(void)
 
 void period_1000Hz(void)
 {
-
+    /*The interrupts rising and falling edge will act as SW1 and SW2*/
+    //In progress - this will be replaced with the input from IR sensors
+        if (SW.getSwitch(1))
+        {
+            start_time = (int) sys_get_uptime_ms();
+        }
+        else if(SW.getSwitch(2))
+        {
+            elapsed_time = (int) sys_get_uptime_ms() - start_time;
+        }
 }

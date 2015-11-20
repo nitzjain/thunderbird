@@ -56,7 +56,6 @@
 #include "lpc_pwm.hpp"
 #include "switches.hpp"
 
-
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -72,17 +71,15 @@
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 
-
-
 int main(void)
 {
-        CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
-        CAN_bypass_filter_accept_all_msgs(); //accept all messages
-        CAN_reset_bus(can1); //resets the CAN bus*/
+    CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
+    CAN_bypass_filter_accept_all_msgs(); //accept all messages
+    CAN_reset_bus(can1); //resets the CAN bus*/
 
-        scheduler_add_task(new periodicSchedulerTask());
-        scheduler_start();
-        return -1;
+    scheduler_add_task(new periodicSchedulerTask());
+    scheduler_start();
+    return -1;
 
     /**
      * A few basic tasks for this bare-bone system :

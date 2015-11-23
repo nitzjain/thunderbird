@@ -45,10 +45,25 @@
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
+
 //can message id
 can_msg_t control;
 
 unsigned int valueNeeded;
+/// Called once before the RTOS is started, this is a good place to initialize things once
+bool period_init(void)
+{
+    return true; // Must return true upon success
+}
+
+/// Register any telemetry variables
+bool period_reg_tlm(void)
+{
+    // Make sure "SYS_CFG_ENABLE_TLM" is enabled at sys_config.h to use Telemetry
+    return true; // Must return true upon success
+}
+
+
 
 #define up    7.9
 #define up_L  7.6

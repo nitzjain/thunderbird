@@ -29,6 +29,7 @@
 #include "examples/examples.hpp"
 #include "motor_directions/motor_directions.hpp"
 #include "motor_directions/motor_input.hpp"
+#include "_can_dbc/can_dbc.h"
 
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
@@ -44,8 +45,25 @@
  *        In either case, you should avoid using this bus or interfacing to external components because
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
+
+
+/**
+ * Variable defintion which defined as extern in can_dbc.h
+ */
+
+/// These 'externs' need to be defined in a source file of your project
+
+const uint32_t                                         HEARTBEAT__MIA_MS = 0;
+const DRIVER_TX_HEARTBEAT_t                            HEARTBEAT__MIA_MSG = {0};
+const uint32_t                                            SONARS__MIA_MS = 0;
+const SENSOR_TX_SONARS_t                                  SONARS__MIA_MSG = {0 };
+const uint32_t                                         MOTOR_CMD__MIA_MS = 0;
+const DRIVER_TX_MOTOR_CMD_t                            MOTOR_CMD__MIA_MSG = {0};
+
+
 int main(void)
 {
+
     /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.
@@ -56,11 +74,11 @@ int main(void)
      * such that it can save remote control codes to non-volatile memory.  IR remote
      * control codes can be learned by typing the "learn" terminal command.
      */
-    scheduler_add_task(new terminalTask(PRIORITY_HIGH));
+    //scheduler_add_task(new terminalTask(PRIORITY_HIGH));
 
 
-    scheduler_add_task(new update_sensor_values(PRIORITY_HIGH));
-    scheduler_add_task(new motor_input(PRIORITY_HIGH));
+    //scheduler_add_task(new update_sensor_values(PRIORITY_HIGH));
+    //scheduler_add_task(new motor_input(PRIORITY_HIGH));
 
     #if 0
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
@@ -68,7 +86,7 @@ int main(void)
     #endif
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 0
+    #if 1
     scheduler_add_task(new periodicSchedulerTask());
     #endif
 

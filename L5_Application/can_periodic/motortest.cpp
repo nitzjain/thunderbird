@@ -10,11 +10,11 @@
 
 
 typedef enum direction {
-    straight = 0X020,
-    left = 0x021,
-    right = 0X022,
-    stop = 0X023,
-    reverse = 0X024,
+    stop = 0,
+    straight = 1,
+    left = 2,
+    right = 3,
+    reverse = 4,
 };
 const int switchdebounce = 1; // 50 ns debounce delay must be present. adjust value based on periodic task.
 const can_t mycan = can1;

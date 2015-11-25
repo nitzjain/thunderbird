@@ -7,40 +7,77 @@
 #include "motor_directions.hpp"
 
 
-int sensor_left, sensor_stright, sensor_right, sensor_reverse;
-
 int gps_direction = 1;
-
+extern uint8_t speed_counter;
 
 /**
  * Gives the direction based on sensor values.
  */
 
-char direction_computation()
+direction_t direction_computation(int sensor_left, int sensor_straight, int sensor_right, int sensor_reverse)
 {
-    if(sensor_left >= SENSOR_THRESHOLD && sensor_stright >= SENSOR_THRESHOLD && sensor_right >= SENSOR_THRESHOLD)
-          return MOVE_STRAIGHT; // it should follow GPS co ordinates
-    else if(sensor_left >= SENSOR_THRESHOLD && sensor_stright>=SENSOR_THRESHOLD && sensor_right < SENSOR_THRESHOLD)
-           return MOVE_STRAIGHT;
-    else if(sensor_left >= SENSOR_THRESHOLD && sensor_stright < SENSOR_THRESHOLD && sensor_right  >= SENSOR_THRESHOLD)
-              return MOVE_RIGHT;
-    else if(sensor_left >= SENSOR_THRESHOLD &&  sensor_stright < SENSOR_THRESHOLD && sensor_right < SENSOR_THRESHOLD)
-              return MOVE_LEFT;
-    else if(sensor_left < SENSOR_THRESHOLD && sensor_stright >= SENSOR_THRESHOLD && sensor_right >= SENSOR_THRESHOLD)
-              return MOVE_STRAIGHT;
-    else if(sensor_left < SENSOR_THRESHOLD && sensor_stright >= SENSOR_THRESHOLD && sensor_right < SENSOR_THRESHOLD)
-              return MOVE_STRAIGHT;
-    else if(sensor_left < SENSOR_THRESHOLD && sensor_stright < SENSOR_THRESHOLD && sensor_right >= SENSOR_THRESHOLD)
-              return MOVE_RIGHT;
-    else if(sensor_left < SENSOR_THRESHOLD && sensor_stright < SENSOR_THRESHOLD && sensor_right < SENSOR_THRESHOLD)
-                return STOP;
+    if (sensor_left >= SENSOR_THRESHOLD && sensor_straight >= SENSOR_THRESHOLD
+            && sensor_right >= SENSOR_THRESHOLD)
+    {
+        speed_counter++;
+        return straight; // it should follow GPS co ordinates
+    }
+    else if (sensor_left >= SENSOR_THRESHOLD
+            && sensor_straight >= SENSOR_THRESHOLD
+            && sensor_right < SENSOR_THRESHOLD)
+    {
+        speed_counter = 0;
+        return straight;
+    }
+    else if (sensor_left >= SENSOR_THRESHOLD
+            && sensor_straight < SENSOR_THRESHOLD
+            && sensor_right >= SENSOR_THRESHOLD)
+    {
+        speed_counter = 0;
+        return right;
+    }
+    else if (sensor_left >= SENSOR_THRESHOLD
+            && sensor_straight < SENSOR_THRESHOLD
+            && sensor_right < SENSOR_THRESHOLD)
+    {
+        speed_counter = 0;
+        return left;
+    }
+    else if (sensor_left < SENSOR_THRESHOLD
+            && sensor_straight >= SENSOR_THRESHOLD
+            && sensor_right >= SENSOR_THRESHOLD)
+    {
+        speed_counter = 0;
+        return straight;
+    }
+    else if (sensor_left < SENSOR_THRESHOLD
+            && sensor_straight >= SENSOR_THRESHOLD
+            && sensor_right < SENSOR_THRESHOLD)
+    {
+        speed_counter = 0;
+        return straight;
+    }
+    else if (sensor_left < SENSOR_THRESHOLD
+            && sensor_straight < SENSOR_THRESHOLD
+            && sensor_right >= SENSOR_THRESHOLD)
+    {
+        speed_counter = 0;
+        return right;
+    }
+    else if (sensor_left < SENSOR_THRESHOLD
+            && sensor_straight < SENSOR_THRESHOLD
+            && sensor_right < SENSOR_THRESHOLD)
+    {
+        speed_counter = 0;
+        return stop;
+    }
 #if 0
     {
          //enable after the demo
            if (sensor_reverse >=  SENSOR_THRESHOLD)
-                 return MOVE_REVERSE;
+                 return reverse;
          else
-                 return STOP;
+                 return stop;
 
     }
 #endif

@@ -37,10 +37,11 @@
 #include "eint.h"
 #include "utilities.h"
 #include "can.h"
+#include "_can_dbc/can_dbc.h"
 
 extern uint8_t Sen_val[3];
 extern can_msg_t msg1;
-
+#define THRESHOLD 60
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
@@ -67,34 +68,59 @@ void period_1Hz(void)
 
 void period_10Hz(void)
 {
-        Sen_val[0]=GetLeftSensorReading();
-        if(Sen_val[0]<40)
-        {
-            LE.toggle(1);
-        }
-        Sen_val[1]=GetMidSensorReading();
-        if(Sen_val[1]<40)
-            {
-                LE.toggle(2);
-            }
-        Sen_val[2]=GetRightSensorReading();
-        if(Sen_val[2]<40)
-            {
-                LE.toggle(3);
-            }
 
-           msg1.msg_id = 0x001;
-           msg1.frame_fields.data_len = 3;
-           msg1.data.bytes[0] = Sen_val[0];
-           msg1.data.bytes[1] = Sen_val[1];
-           msg1.data.bytes[2] = Sen_val[2];
+    msg_hdr_t hdr;
+    uint64_t *to;
+    SENSOR_TX_SONARS_t from;
 
-        CAN_tx(can1, &msg1, portMAX_DELAY);
+    Sen_val[0]=GetLeftSensorReading();
 
-//        printf("Reading LEFT is: %i\n",Sen_val[0]);
-//        printf("Reading MID is: %i\n",Sen_val[1]);
-//        printf("Reading RIGHT is: %i\n",Sen_val[2]);
-        //delay_ms(1);
+    if(Sen_val[0]<THRESHOLD)
+    {
+        LE.toggle(1);
+    }
+
+    Sen_val[1]=GetMidSensorReading();
+
+    if(Sen_val[1]<THRESHOLD)
+    {
+        LE.toggle(2);
+    }
+
+    Sen_val[2]=GetRightSensorReading();
+
+    if(Sen_val[2]<THRESHOLD)
+    {
+        LE.toggle(3);
+    }
+
+    //msg1.msg_id = 0x001;
+    //msg1.frame_fields.data_len = 3;
+    //msg1.data.bytes[0] = Sen_val[0];
+    //msg1.data.bytes[1] = Sen_val[1];
+    //msg1.data.bytes[2] = Sen_val[2];
+    //Sen_val[0]= 45;
+    //Sen_val[1] = 23;
+    //Sen_val[2] = 89;
+    from.m0.SENSOR_SONARS_left = Sen_val[0];
+    from.m0.SENSOR_SONARS_middle = Sen_val[1];
+    from.m0.SENSOR_SONARS_right = Sen_val[2];
+
+
+    printf("ecode LEFT is: %f\n",from.m0.SENSOR_SONARS_left);
+    printf("encode MID is: %f\n",from.m0.SENSOR_SONARS_middle);
+    printf("encode RIGHT: %f\n",from.m0.SENSOR_SONARS_right);
+    to = (uint64_t *)&msg1.data;
+    hdr = SENSOR_TX_SONARS_encode(to, &from);
+    msg1.msg_id = hdr.mid;
+    msg1.frame_fields.data_len = hdr.dlc;
+
+    CAN_tx(can1, &msg1, 100);
+
+    //printf("Reading LEFT is: %i\n",msg1.data.bytes[0]);
+    //printf("Reading MID is: %i\n",msg1.data.bytes[1]);
+    //printf("Reading RIGHT is: %i\n",msg1.data.bytes[2]);
+    delay_ms(10);
 
 }
 

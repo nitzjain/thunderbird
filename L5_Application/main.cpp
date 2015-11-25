@@ -34,6 +34,15 @@
 #include "utilities.h"
 #include "uart2.hpp"
 #include "sensor.h"
+#include "_can_dbc/can_dbc.h"
+
+const uint32_t HEARTBEAT__MIA_MS = 0;
+const uint32_t SONARS__MIA_MS = 0;
+const SENSOR_TX_SONARS_t SONARS__MIA_MSG = { 0 };
+const uint32_t MOTOR_CMD__MIA_MS = 0;
+
+
+
 
 uint8_t Sen_val[3];
 

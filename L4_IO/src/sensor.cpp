@@ -175,8 +175,6 @@ int GetMidSensorReading()
        // printf("element is %i\n",leftSenVal[9]);
         LPC_GPIO2->FIOCLR = (1 << 2);
         return MidSenVal[9];
-
-
 }
 
 

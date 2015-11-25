@@ -57,7 +57,6 @@
 #include "switches.hpp"
 
 /**
- * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
  *
  * @warning SPI #1 bus usage notes (interfaced to SD & Flash):
@@ -71,6 +70,51 @@
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 
+class button: public scheduler_task
+{
+    public:
+        button(uint8_t priority) :
+                scheduler_task("wireless", 512, priority)
+        {
+            /* Nothing to init */
+        }
+
+        bool run(void *p)
+        {
+
+            PWM pwm1(PWM::pwm1, 50);
+            PWM pwm2(PWM::pwm2, 50);
+            static int flag = 0;
+            if (!flag)
+            {
+                pwm1.set(7.5);
+                pwm2.set(7);
+                flag++;
+            }
+            if (SW.getSwitch(1))
+            {
+                printf("Move forward\n");
+                pwm1.set(7.9);
+            }
+
+            else if(SW.getSwitch(2))
+
+            {
+                printf("Move backward\n");
+                pwm1.set(7.5);
+            }
+
+            else if(SW.getSwitch(3))
+
+            {
+                printf("Move backward\n");
+                pwm1.set(8.2);
+            }
+            delay_ms(200);
+            return true;
+        }
+};
+
 int main(void)
 {
     CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
@@ -78,6 +122,7 @@ int main(void)
     CAN_reset_bus(can1); //resets the CAN bus*/
 
     scheduler_add_task(new periodicSchedulerTask());
+   // scheduler_add_task(new button(PRIORITY_HIGH));
     scheduler_start();
     return -1;
 
@@ -91,11 +136,9 @@ int main(void)
      * such that it can save remote control codes to non-volatile memory.  IR remote
      * control codes can be learned by typing the "learn" terminal command.
      */
-    scheduler_add_task(new terminalTask(PRIORITY_HIGH));
-
+    //scheduler_add_task(new terminalTask(PRIORITY_HIGH));
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
-    scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
-
+    // scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
 #if 0
     scheduler_add_task(new periodicSchedulerTask());
@@ -161,7 +204,7 @@ int main(void)
     scheduler_add_task(new wifiTask(Uart3::getInstance(), PRIORITY_LOW));
 #endif
 
-    scheduler_start(); ///< This shouldn't return
-    return -1;
+    // scheduler_start(); ///< This shouldn't return
+    //return -1;
 }
 

@@ -16,6 +16,7 @@
 #include "stdio.h"
 #include "io.hpp"
 
+#if 0
 
 class motor_input: public scheduler_task
 {
@@ -109,5 +110,6 @@ class motor_input: public scheduler_task
         }
 };
 
+#endif
 
 #endif /* L5_APPLICATION_MOTOR_DIRECTIONS_MOTOR_INPUT_HPP_ */

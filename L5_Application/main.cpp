@@ -23,6 +23,7 @@
  *          @see L0_LowLevel/lpc_sys.h if you wish to override printf/scanf functions.
  *
  */
+
 #include "tasks.hpp"
 #include "examples/examples.hpp"
 #include "tasks.hpp"
@@ -55,6 +56,7 @@
 #include "can.h"
 #include "lpc_pwm.hpp"
 #include "switches.hpp"
+
 
 /**
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -115,12 +117,24 @@ class button: public scheduler_task
         }
 };
 
+
+int white_count = 0;
+
+void count_interrupts()
+{
+    white_count++;
+    //LD.setNumber(61);
+
+}
+
 int main(void)
 {
     CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
     CAN_bypass_filter_accept_all_msgs(); //accept all messages
     CAN_reset_bus(can1); //resets the CAN bus*/
 
+
+    eint3_enable_port2(7, eint_rising_edge, count_interrupts);
     scheduler_add_task(new periodicSchedulerTask());
    // scheduler_add_task(new button(PRIORITY_HIGH));
     scheduler_start();

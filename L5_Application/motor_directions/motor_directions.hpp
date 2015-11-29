@@ -41,7 +41,10 @@ typedef enum direction {
 //To compute sensor values and decide the direction
 
 char direction_computation();
-
+direction_t direction_computation(int sensor_left, int sensor_straight,
+        int sensor_right, int sensor_reverse);
+bool isnearobstacle(int sensor_left,int sensor_straight,int sensor_right);
+direction_t fardirection_computation(int sensor_left,int sensor_straight,int sensor_right,int sensor_reverse,direction_t neardirection);
 
 
 #if 0

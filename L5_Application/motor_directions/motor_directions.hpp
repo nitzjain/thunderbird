@@ -13,7 +13,8 @@
 //#include "can_periodic/canperiodicext.hpp"
 
 //need to update this value based on sensor controller data
-#define SENSOR_THRESHOLD 80
+#define SENSOR_THRESHOLD 30
+#define FAR_SENSOR_THRESHOLD 100
 #define MOVE_STRAIGHT 0
 #define MOVE_RIGHT 1
 #define MOVE_LEFT 2
@@ -31,7 +32,9 @@ typedef enum direction {
     left = 2,
     right = 3,
     reverse = 4,
-    start = 5
+    start = 5,
+    slight_left = 6,
+    slight_right = 7,
 }direction_t;
 
 

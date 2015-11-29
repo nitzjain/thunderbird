@@ -116,12 +116,12 @@ void CAN_INIT()
     CAN_reset_bus(can1);
     CAN_bypass_filter_accept_all_msgs();
     memset(&msg1, 0, sizeof(msg1));
-    msg1.msg_id = 0x001;
-    msg1.frame_fields.data_len = 3;
-    msg1.data.bytes[0] = Sen_val[0];
-    msg1.data.bytes[1] = Sen_val[1];
-    msg1.data.bytes[2] = Sen_val[2];
-    printf("CAN initialized");
+    //msg1.msg_id = 0x001;
+    //msg1.frame_fields.data_len = 3;
+    //msg1.data.bytes[0] = Sen_val[0];
+   // msg1.data.bytes[1] = Sen_val[1];
+    //msg1.data.bytes[2] = Sen_val[2];
+    //printf("CAN initialized");
 }
 
 class Sensor: public scheduler_task
@@ -144,14 +144,14 @@ class Sensor: public scheduler_task
         bool run(void *p)
         {
 
-            Sen_val[0] = GetLeftSensorReading();
+          //  Sen_val[0] = GetLeftSensorReading();
             //           Sen_val[1]=GetMidSensorReading();
 //            Sen_val[2]=GetRightSensorReading();
 
-            printf("Reading LEFT is: %i\n", Sen_val[0]);
+            //printf("Reading LEFT is: %i\n", Sen_val[0]);
 //            printf("Reading MID is: %i\n",Sen_val[1]);
 //            printf("Reading RIGHT is: %i\n",Sen_val[2]);
-            CAN_tx(can1, &msg1, portMAX_DELAY);
+           // CAN_tx(can1, &msg1, portMAX_DELAY);
             delay_ms(1000);
             return true;
         }

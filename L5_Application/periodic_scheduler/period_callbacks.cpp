@@ -39,7 +39,37 @@
 #include "can.h"
 #include "_can_dbc/can_dbc.h"
 
-extern uint8_t Sen_val[3];
+//extern int Sen_val[100];
+//extern int Sen_valu[100];
+//extern int Sen_value[100];
+
+extern can_msg_t msg1;
+
+#define STARTLEFT() (LPC_GPIO2->FIOSET = (1 << 0))
+#define STOPLEFT() (LPC_GPIO2->FIOCLR = (1 << 0))
+#define STARTMID() (LPC_GPIO2->FIOSET = (1 << 2))
+#define STOPMID() (LPC_GPIO2->FIOSET = (1 << 2))
+#define STARTRIGHT() (LPC_GPIO2->FIOSET = (1 << 4))
+#define STOPRIGHT() (LPC_GPIO2->FIOSET = (1 << 4))
+
+typedef enum{
+    start = 0,
+    left,
+    mid,
+    right,
+}sensorstate;
+
+
+static sensorstate currentstate = start;
+
+int leftfall = 0, midfall = 0, rightfall = 0;
+
+extern int PW_Right,PW_Left,PW_Mid;
+
+int leftvalue = -1, midvalue = -1, rightvalue = -1;
+
+int issensorvaluepresent = -1;
+//extern uint8_t Sen_val[3];
 extern can_msg_t msg1;
 #define THRESHOLD 60
 /// This is the stack size used for each of the period tasks
@@ -61,77 +91,59 @@ bool period_reg_tlm(void)
 
 void period_1Hz(void)
 {
-    LE.off(1);
-    LE.off(2);
-    LE.off(3);
+
 }
 
 void period_10Hz(void)
 {
-
-    msg_hdr_t hdr;
-    uint64_t *to;
-    SENSOR_TX_SONARS_t from;
-
-    Sen_val[0]=GetLeftSensorReading();
-
-    if(Sen_val[0]<THRESHOLD)
-    {
-        LE.toggle(1);
-    }
-
-    Sen_val[1]=GetMidSensorReading();
-
-    if(Sen_val[1]<THRESHOLD)
-    {
-        LE.toggle(2);
-    }
-
-    Sen_val[2]=GetRightSensorReading();
-
-    if(Sen_val[2]<THRESHOLD)
-    {
-        LE.toggle(3);
-    }
-
-    //msg1.msg_id = 0x001;
-    //msg1.frame_fields.data_len = 3;
-    //msg1.data.bytes[0] = Sen_val[0];
-    //msg1.data.bytes[1] = Sen_val[1];
-    //msg1.data.bytes[2] = Sen_val[2];
-    //Sen_val[0]= 45;
-    //Sen_val[1] = 23;
-    //Sen_val[2] = 89;
-    from.m0.SENSOR_SONARS_left = Sen_val[0];
-    from.m0.SENSOR_SONARS_middle = Sen_val[1];
-    from.m0.SENSOR_SONARS_right = Sen_val[2];
-
-
-    printf("ecode LEFT is: %f\n",from.m0.SENSOR_SONARS_left);
-    printf("encode MID is: %f\n",from.m0.SENSOR_SONARS_middle);
-    printf("encode RIGHT: %f\n",from.m0.SENSOR_SONARS_right);
-    to = (uint64_t *)&msg1.data;
-    hdr = SENSOR_TX_SONARS_encode(to, &from);
-    msg1.msg_id = hdr.mid;
-    msg1.frame_fields.data_len = hdr.dlc;
-
-    CAN_tx(can1, &msg1, 100);
-
-    //printf("Reading LEFT is: %i\n",msg1.data.bytes[0]);
-    //printf("Reading MID is: %i\n",msg1.data.bytes[1]);
-    //printf("Reading RIGHT is: %i\n",msg1.data.bytes[2]);
-    delay_ms(10);
 
 }
 
 void period_100Hz(void)
 {
 
+    if(issensorvaluepresent==1)
+           {
+               sendsensorvalues(leftvalue,midvalue,rightvalue);
+               issensorvaluepresent = -1;
+           }
 
 }
 
 void period_1000Hz(void)
 {
+    switch(currentstate){
+        case start:
+            STARTLEFT();
+            currentstate = left;
+            leftfall = -1;
+            break;
+        case left:
+            if(leftfall == 1){
+                leftvalue = PW_Left;
+                STOPLEFT();
+                STARTMID();
+                midfall = -1;
+                currentstate = mid;
+            }
+            break;
+        case mid:
+                if(midfall == 1){
+                    midvalue = PW_Mid;
+                    STOPMID();
+                    STARTRIGHT();
+                    rightfall = -1;
+                    currentstate = right;
+                }
+                break;
+        case right:
+                if(rightfall == 1){
+                    rightvalue = PW_Right;
+                    STOPRIGHT();
+                    currentstate = start;
+                    issensorvaluepresent = 1;
+                }
+                break;
 
-   // LE.toggle(4);
+    }
 }

@@ -1,8 +1,8 @@
 /*
  * sensor.h
  *
- *  Created on: Oct 26, 2015
- *      Author: Rajashree
+ *  Created on: Nov 26, 2015
+ *      Author: Nitesh
  */
 
 #ifndef SENSOR_H_
@@ -14,7 +14,7 @@ extern "C" {
 #include "eint.h"
 
 
-
+int maxRepeating(int*, int, int);
 void trigger_LeftSensor();
 void trigger_MidSensor();
 void trigger_RightSensor();
@@ -34,10 +34,11 @@ void initPWmid(eint_intr_t eintType);
 void InitInterruptLeft();
 void InitInterruptRight();
 void InitInterruptMid();
+void sendsensorvalues(uint32_t,uint32_t,uint32_t);
+//int GetLeftSensorReading();
+//int GetRightSensorReading();
+//int GetMidSensorReading();
 
-int GetLeftSensorReading();
-int GetRightSensorReading();
-int GetMidSensorReading();
 #ifdef __cplusplus
 }
 #endif

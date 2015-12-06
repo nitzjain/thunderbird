@@ -95,16 +95,23 @@ bool period_reg_tlm(void)
 }
 
 /*Sets the motor speed according to master*/
-
+int lastval =0;
 void period_1Hz(void)
 {
+
+    //LD.setNumber((int)pwm_mod*10);
+    //printf("\nWhite count = %d", white_count);
 
 }
 
 void period_10Hz(void)
 {
     //moved the LCD and maintain speed to 1000 Hz function
+    //LCD_Display();
+    //maintain_speed();
+
 }
+
 void period_100Hz(void)
 {
     DRIVER_TX_MOTOR_CMD_t to;
@@ -116,6 +123,19 @@ void period_100Hz(void)
 
 //    static float desiredpwm = 0;
 //    float newpwm = 0;
+
+    /**/
+   static int a=0;
+   a++;
+   if(a==1000)
+   {
+       pwm_mod= pwm_mod+0.1;
+       dc_motor_instance.setDriveMotor(pwm_mod);
+       printf("PWM: %f",pwm_mod);
+       a=0;
+   }
+
+
     /*Initializing DC motor*/
     static int flag = 0;
     if (flag == 0)
@@ -263,6 +283,6 @@ if (speedchanged == 1)
 
 void period_1000Hz(void)
 {
-    LCD_Display();
-    maintain_speed();
+
+
 }

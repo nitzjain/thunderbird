@@ -402,7 +402,7 @@ float I2C_Temp::getFarenheit()
 }
 
 
-#if 1
+#if 0
 bool I2C_comp::init_compass()
 {
     const unsigned char com_cfg_reg_a_ptr = 0x00;
@@ -469,7 +469,7 @@ void I2C_comp::get_compass_data(){
 
     delay_ms(100);
 }
-#else if
+#end if
 
 bool I2C_comp::init_compass()
 {

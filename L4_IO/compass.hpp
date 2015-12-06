@@ -8,10 +8,13 @@
 #include "i2c2_device.hpp"  // I2C Device base class
 
 typedef struct compass_data{
-        uint16_t x;
-        uint16_t y;
-        uint16_t z;
+        float yaw;
+        float pitch;
+        float roll;
 }compass_data_t;
+
+
+#if 0
 class I2C_comp : private i2c2_device
 {
     public:
@@ -39,5 +42,6 @@ class compass:public I2C_comp , public SingletonTemplate<compass>
                 friend class SingletonTemplate<compass>;  ///< Friend class used for Singleton Template
         };
 
-
+*/
         #endif /* COMPASS_HPP_ */
+#endif

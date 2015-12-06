@@ -24,4 +24,5 @@ typedef struct gps_data
    int checksum;
 }gps_data_t;
 
+
 #endif /* L4_IO_GPS_DATATYPE_H_ */

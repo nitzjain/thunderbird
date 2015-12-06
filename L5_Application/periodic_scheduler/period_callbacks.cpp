@@ -27,7 +27,7 @@
  * For example, the 1000Hz take slot runs periodically every 1ms, and whatever you
  * do must be completed within 1ms.  Running over the time slot will reset the system.
  */
-
+#include "_can_dbc\auto_gen.inc"
 #include <stdint.h>
 #include "stdio.h"
 #include "io.hpp"
@@ -35,28 +35,56 @@
 #include "gps_datatype.h"
 #include "tasks.hpp"
 #include <stdint.h>
+#include "compass.hpp"
+#include "can.h"
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
-
+int calculate_sector();
 
 
 void period_1Hz(void)
 {
+
     LE.toggle(1);
 }
 
 void period_10Hz(void)
 {
-    static QueueHandle_t gps_data_q = scheduler_task::getSharedObject("gps_queue");
-    gps_data_t data;
-    if (NULL == gps_data_q) {
+    //printf("10");
+    //static QueueHandle_t gps_data_q = scheduler_task::getSharedObject("gps_queue");
+    //gps_data_t data_gps;
 
+    /*if (NULL == gps_data_q) {
+        printf("data-load error");
     }
-    else if (xQueueReceive(gps_data_q, &data, 0))
+    else if (xQueueReceive(gps_data_q, &data_gps, 0))
     {
-        printf("longitude: %f",data.Longitude);
+        printf("longitude: %f",data_gps.Longitude);
     }
+*/
+    static QueueHandle_t compass_data_q = scheduler_task::getSharedObject("compass_queue");
+    compass_data_t data_compass;
+
+    if (NULL == compass_data_q) {
+        printf("data-load error");
+    }
+    else if (xQueueReceive(compass_data_q, &data_compass, 0))
+    {
+        printf("yaw: %f",data_compass.yaw);
+    }
+    //calculate_desired_angle();
+    //int sector = calculate_sector();
+    /*
+    can_msg_t msg;
+    GPS_TX_COORDINATES_t gps_c;
+        gps_c.GPS_LAT1 = 8;
+        gps_c.GPS_LAT2 = -2;
+        msg_hdr_t h = GPS_TX_COORDINATES_encode((uint64_t*)&msg.data, &gps_c);
+        msg.msg_id = h.mid;
+        msg.frame_fields.data_len = h.dlc;
+        CAN_tx(can1, &msg, 0);
+    */
 }
 void period_100Hz(void)
 {

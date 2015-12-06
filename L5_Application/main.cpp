@@ -34,6 +34,8 @@ This is the gpssensor branch
 #include "file_logger.h"
 #include "gps_datatype.h"
 #include "string.h"
+#include "compass.hpp"
+#include "_can_dbc\auto_gen.inc"
 
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
@@ -50,6 +52,7 @@ This is the gpssensor branch
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 #define gps_baudrate 38400
+#define compass_baudrate 57600
 
 class Gps_Task : public scheduler_task
 {
@@ -68,8 +71,8 @@ class Gps_Task : public scheduler_task
             gps_uart(Uart2::getInstance())
         {
             gps_uart.init(gps_baudrate,rx_q,tx_q);
-
         }
+
         bool init(void){
             gps_data_q = xQueueCreate(2,sizeof(gps_data_t));
             addSharedObject("gps_queue",gps_data_q);
@@ -111,56 +114,65 @@ class Gps_Task : public scheduler_task
             return true;
         }
 };
-
-class compass_task : public scheduler_task
+class Compass_Task : public scheduler_task
 {
     private:
-        bool init_status;
-        compass_data_t* comp_data, *comp_data_val;
-        int f = 0;
+        Uart2 &compass_uart;
+        static const int rx_q = 100;
+        static const int tx_q = 100;
+        char * token[4];
+        char *temp;
+        int i = 0;
+        compass_data_t compass_values;
+        QueueHandle_t compass_data_q;
     public:
-        compass_task(uint8_t priority) :
-            scheduler_task("compass", 512*4, priority)
+        Compass_Task(uint8_t priority) :
+            scheduler_task("compass", 512*8, priority),
+            compass_uart(Uart2::getInstance())
         {
+            compass_uart.init(compass_baudrate,rx_q,tx_q);
         }
-#if 0
-        bool init(void *p){
-            init_status = CO.init_compass();
-            //printf("INIT\n");
-            return true;
+
+        bool init(void){
+            compass_data_q = xQueueCreate(2,sizeof(compass_data_t));
+            addSharedObject("compass_queue",compass_data_q);
+            return (NULL!=compass_data_q);
         }
-#endif
+
         bool run(void *p)
         {
-            if(f == 0){
-                init_status = CO.init_compass();
-                if(init_status){
-                    printf("success");
+            i = 0;
+            const char s[2] = ",";
+            const char t[2] = ":";
+            char rx_buff[100];
+            char rx_str[100];
+            compass_uart.gets(rx_buff, sizeof(rx_buff), portMAX_DELAY);         //get data from GPS module
+            strcpy(rx_str,rx_buff);                                         //copy the GPS data to a temporary string
+            temp = strtok(rx_str,t);                                        //Separate the data by ','
+                while(temp!=NULL && i<4){
+                    token[i++] = temp;
+                    temp = strtok(NULL,s);
+                    //printf("token%d is %s \n",i-1,token[i-1]);                //print the separated variables
                 }
-                f++;
+
+            sscanf(token[1],"%f",&compass_values.roll);
+            sscanf(token[2],"%f",&compass_values.pitch);
+            sscanf(token[3],"%f",&compass_values.yaw);
+
+            if(!xQueueSend(compass_data_q,&compass_values,0)){
+                LOG_ERROR("Not sending in the queue");
             }
-                //printf("running");
-
-            printf("RUN\n");
-#if 1
-            CO.get_compass_data();
-#else if
-            CO.loop();
-#endif
-            //printf("compass data = %s :",comp_data_val->x);
-            //printf("%s :",comp_data_val->y);
-            //printf("%s \n",comp_data_val->z);
-
             return true;
         }
 };
+
 int main(void)
 {
 
     scheduler_add_task(new terminalTask(PRIORITY_HIGH));
     //scheduler_add_task(new Gps_Task(PRIORITY_MEDIUM));
-    scheduler_add_task(new compass_task(PRIORITY_MEDIUM));
-    //scheduler_add_task(new compass(PRIORITY_MEDIUM));
+    scheduler_add_task(new Compass_Task(PRIORITY_MEDIUM));
+
     /**
      * A few basic tasks for this bare-bone system :
      *      1.  Terminal task provides gateway to interact with the board through UART terminal.

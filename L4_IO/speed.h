@@ -50,7 +50,7 @@ void maintain_speed()
     }
     //LD.setNumber(white_count);
     extern int lastval;
-    //printf("\nwhite count = %d", white_count);
+    printf("\nwhite count = %d", white_count);
     lastval = white_count;
     white_count = 0;
 }

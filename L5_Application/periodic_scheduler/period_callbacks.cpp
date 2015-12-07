@@ -47,9 +47,16 @@
 
 #define distance 18  //This is the wheels circumference.
 
-typedef enum
+typedef enum direction
 {
-    stop = 0, straight = 1, left = 2, right = 3, reverse = 4, start = 5
+    stop = 0,
+    straight = 1,
+    left = 2,
+    right = 3,
+    reverse = 4,
+    start = 5,
+    slight_left = 6,
+    slight_right = 7,
 } direction_t;
 
 /// This is the stack size used for each of the period tasks
@@ -63,16 +70,20 @@ can_msg_t control;
 #define up_R  7.6
 #define down  5.5
 #define SL    5
+#define S_SL  6.25
 #define SR    8
+#define S_SR  7.5
 
 int avg_speed = 0;
-float final_time = 0, pwm_mod = 7.9;
-int counter = 0;
+float final_time = 0, pwm_mod = 7.95, Steer_PWM = 5;
+int counter = 0, speedchanged;
+/*Sets the motor speed according to master*/
+int lastval = 0;
+static bool const_speed = 0;
 
 GPIO rpm(P2_7); // Control P1.20
 
 int vehicle_moved = 0;
-
 
 const uint32_t HEARTBEAT__MIA_MS = 0;
 const DRIVER_TX_HEARTBEAT_t HEARTBEAT__MIA_MSG =
@@ -94,8 +105,6 @@ bool period_reg_tlm(void)
     return true; // Must return true upon success
 }
 
-/*Sets the motor speed according to master*/
-int lastval =0;
 void period_1Hz(void)
 {
 
@@ -108,33 +117,34 @@ void period_10Hz(void)
 {
     //moved the LCD and maintain speed to 1000 Hz function
     //LCD_Display();
-    //maintain_speed();
+    if (const_speed)
+        maintain_speed();
 
 }
 
 void period_100Hz(void)
 {
     DRIVER_TX_MOTOR_CMD_t to;
-//    uint64_t *from;
-//    msg_hdr_t hdr;
+    uint64_t *from;
+    msg_hdr_t hdr;
 
     DC_Motor &dc_motor_instance = DC_Motor::getInstance();
     Steer_Motor &steer = Steer_Motor::getInstance();
 
-//    static float desiredpwm = 0;
-//    float newpwm = 0;
+    static float desiredpwm = 0;
+    float newpwm = 0;
 
-    /**/
-   static int a=0;
-   a++;
-   if(a==1000)
-   {
-       pwm_mod= pwm_mod+0.1;
-       dc_motor_instance.setDriveMotor(pwm_mod);
-       printf("PWM: %f",pwm_mod);
-       a=0;
-   }
-
+    /*
+     static int a=0;
+     a++;
+     if(a==10)
+     {
+     Steer_PWM=Steer_PWM+0.1;
+     steer.setSteerMotor(Steer_PWM);
+     //printf("PWM-Steer: %f\n",pwm_mod);
+     a=0;
+     }
+     */
 
     /*Initializing DC motor*/
     static int flag = 0;
@@ -144,145 +154,165 @@ void period_100Hz(void)
         steer.setSteerMotor(7);
         flag++;
     }
-//    while (CAN_rx(can1, &control, 0))
-//    {
-//        if (control.msg_id == 0x20)
-//        {
-//            from = (uint64_t *) &control.data;
-//            hdr.dlc = control.frame_fields.data_len;
-//            hdr.mid = control.msg_id;
-//
-//            /*Start the feedback*/
-//
-//            if (DRIVER_TX_MOTOR_CMD_decode(&to, from, &hdr))
-//            {
-//                int motor_value = to.MOTOR_CMD_drive;
-//
-//                switch (motor_value)
-//                {
-//                    case 1:
-//                        newpwm = 7.9; //while taking turns
-//                        break;
-//                    case 2:
-//                        newpwm = 7.9; //while going straight
-//                        break;
-//                    default:
-//                        newpwm = 7.5;
-//                        break;
-//                }
-//            }
-//            //No else case for this if |^^
-//            if(newpwm-desiredpwm>0.0010)
-//            {
-//                pwm_mod = newpwm;
-//                desiredpwm = newpwm;
-//            }
-    if (SW.getSwitch(1)) //go forward - 000
+
+    while (CAN_rx(can1, &control, 0))
     {
-        LE.toggle(1);
-        dc_motor_instance.setDriveMotor(pwm_mod);
-        steer.setSteerMotor(7);
-    }
-    else if (left == to.MOTOR_CMD_steer) //go left 001, 011
-    {
-        LE.toggle(2);
-        steer.setSteerMotor(SL);
-        dc_motor_instance.setDriveMotor(pwm_mod);
-    }
-    else if (right == to.MOTOR_CMD_steer) //go right 010, 100, 110
-    {
-        LE.toggle(3);
-        steer.setSteerMotor(SR);
-        dc_motor_instance.setDriveMotor(pwm_mod);
-    }
-    else if (reverse == to.MOTOR_CMD_steer) //go back 111, 101
-    {
-        LE.toggle(4);
-        dc_motor_instance.setDriveMotor(7.5);
-        dc_motor_instance.setDriveMotor(down);
-        steer.setSteerMotor(SR);
-    }
-    else if (SW.getSwitch(2))
-    {
-        dc_motor_instance.setDriveMotor(7.5);
-        steer.setSteerMotor(7);
-    }
+        if (control.msg_id == 0x20)
+        {
+            from = (uint64_t *) &control.data;
+            hdr.dlc = control.frame_fields.data_len;
+            hdr.mid = control.msg_id;
+            const_speed = 1;
+            /*Start the feedback*/
+
+            LD.setNumber(pwm_mod * 10);
+            if (DRIVER_TX_MOTOR_CMD_decode(&to, from, &hdr))
+            {
+                int motor_value = to.MOTOR_CMD_drive;
+
+                switch (motor_value)
+                {
+                    case 1:
+                        newpwm = 7.9; //while taking turns
+                        break;
+                    case 2:
+                        newpwm = 7.9; //while going straight
+                        break;
+                    default:
+                        newpwm = 7.5;
+                        break;
+                }
+            }
+            //No else case for this if |^^
+            if (newpwm - desiredpwm > 0.0010)
+            {
+                pwm_mod = newpwm;
+                desiredpwm = newpwm;
+            }
+
+#if 1
+            if (straight == to.MOTOR_CMD_steer) //go forward - 000
+            {
+                LE.toggle(1);
+                dc_motor_instance.setDriveMotor(pwm_mod);
+                printf("PWM-Straight:%f",pwm_mod);
+                steer.setSteerMotor(7.5);
+
+            }
+            else if (left == to.MOTOR_CMD_steer) //go left 001, 011
+            {
+                LE.toggle(2);
+                steer.setSteerMotor(SL);
+                dc_motor_instance.setDriveMotor(pwm_mod);
+            }
+            else if (right == to.MOTOR_CMD_steer) //go right 010, 100, 110
+            {
+                LE.toggle(3);
+                steer.setSteerMotor(SR);
+                dc_motor_instance.setDriveMotor(pwm_mod);
+            }
+            else if (slight_left == to.MOTOR_CMD_steer) //go slight left
+            {
+                // LE.toggle(3);
+                steer.setSteerMotor(S_SL);
+                dc_motor_instance.setDriveMotor(pwm_mod);
+            }
+            else if(slight_right == to.MOTOR_CMD_steer) // go slight right
+            {
+                steer.setSteerMotor(S_SR);
+                dc_motor_instance.setDriveMotor(pwm_mod);
+
+            }
+            else if (reverse == to.MOTOR_CMD_steer) //go back 111, 101
+            {
+                LE.toggle(4);
+                dc_motor_instance.setDriveMotor(7.5);
+                dc_motor_instance.setDriveMotor(down);
+                steer.setSteerMotor(SR);
+            }
+            else if (SW.getSwitch(2))
+            {
+                dc_motor_instance.setDriveMotor(7.5);
+                steer.setSteerMotor(7);
+            }
 //        }
 //        else
 //        {
 //
 //        }
 //    }
+        }
+    }
 }
+#endif
 
 #if 0
 //Should add the functionality to control the motor speed using the speed check
 
-DC_Motor &dc_motor_instance = DC_Motor::getInstance();
-Steer_Motor &steer = Steer_Motor::getInstance();
+//DC_Motor &dc_motor_instance = DC_Motor::getInstance();
+//Steer_Motor &steer = Steer_Motor::getInstance();
 
-/*Initializing DC motor*/
-static int flag = 0;
-if (flag == 0)
-{
-    dc_motor_instance.setDriveMotor(7.5); //Initialize the motor
-    steer.setSteerMotor(7);
-    flag++;
-}
-while (CAN_rx(can1, &control, 0))
-{
-
-    /* Move forward - */
-    if (control.msg_id == straight) //go forward - 000
-    {
-        if (control.data.bytes[0] == 1)
+        /*Initializing DC motor*/
+        static int init = 0;
+        if (init == 0)
         {
-            pwm_mod1 = 8.1;
-            lower_limit = 250, upper_limit = 400;
+            dc_motor_instance.setDriveMotor(7.5); //Initialize the motor
+            steer.setSteerMotor(7);
+            init++;
         }
-        else if (control.data.bytes[0] == 0)
+        while (CAN_rx(can1, &control, 0))
         {
-            pwm_mod1 = 7.9;
-            lower_limit = 100, upper_limit = 200;
+
+            /* Move forward - */
+            if (control.msg_id == straight) //go forward - 000
+            {
+                if (control.data.bytes[0] == 1)
+                {
+                    pwm_mod = 8.0;
+                    //lower_limit = 250, upper_limit = 400;
+                }
+                else if (control.data.bytes[0] == 0)
+                {
+                    pwm_mod = 7.9;
+                    // lower_limit = 100, upper_limit = 200;
+                }
+
+                dc_motor_instance.setDriveMotor(pwm_mod);
+                steer.setSteerMotor(7);
+                printf("straight\n");
+            }
+            else if (control.msg_id == left) //go left 001, 011
+            {
+                dc_motor_instance.setDriveMotor(pwm_mod);
+                steer.setSteerMotor(SL);
+                printf("left\n");
+                LE.on(2);
+                LE.off(3);
+            }
+            else if (control.msg_id == right) //go right 010, 100, 110
+            {
+                dc_motor_instance.setDriveMotor(pwm_mod);
+                steer.setSteerMotor(SR);
+                printf("right\n");
+                LE.on(3);
+                LE.off(2);
+            }
+            else if (control.msg_id == stop)
+            {
+                steer.setSteerMotor(7);
+                dc_motor_instance.setDriveMotor(7.5);
+            }
         }
 
-        dc_motor_instance.setDriveMotor(pwm_mod1);
-        steer.setSteerMotor(7);
-        printf("straight\n");
-    }
-    else if (control.msg_id == left) //go left 001, 011
-    {
-        dc_motor_instance.setDriveMotor(pwm_mod1);
-        steer.setSteerMotor(SL);
-        printf("left\n");
-        LE.on(2);
-        LE.off(3);
-    }
-    else if (control.msg_id == right) //go right 010, 100, 110
-    {
-        dc_motor_instance.setDriveMotor(pwm_mod1);
-        steer.setSteerMotor(SR);
-        printf("right\n");
-        LE.on(3);
-        LE.off(2);
-    }
-    else if (control.msg_id == stop)
-    {
-        steer.setSteerMotor(7);
-        dc_motor_instance.setDriveMotor(7.5);
-    }
-}
-
-if (speedchanged == 1)
-{
-    dc_motor_instance.setDriveMotor(pwm_mod1);
-    steer.setSteerMotor(7);
-    speedchanged = 0;
-}
+        if (speedchanged == 1)
+        {
+            dc_motor_instance.setDriveMotor(pwm_mod);
+            steer.setSteerMotor(7);
+            speedchanged = 0;
+        }
 #endif
 
-void period_1000Hz(void)
-{
+        void period_1000Hz(void)
+        {
 
-
-}
+        }

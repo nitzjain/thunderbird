@@ -14,10 +14,16 @@ extern "C" {
 #include "eint.h"
 
 
-int maxRepeating(int*, int, int);
 void trigger_LeftSensor();
 void trigger_MidSensor();
 void trigger_RightSensor();
+void trigger_BackSensor();
+
+
+void eintCallbackback_Rise();
+void eintCallbackback_Fall();
+void initPWback(eint_intr_t eintType);
+
 
 void eintCallbackleft_Rise();
 void eintCallbackleft_Fall();
@@ -34,7 +40,9 @@ void initPWmid(eint_intr_t eintType);
 void InitInterruptLeft();
 void InitInterruptRight();
 void InitInterruptMid();
-void sendsensorvalues(uint32_t,uint32_t,uint32_t);
+void InitInterruptBack();
+
+void sendsensorvalues(uint32_t,uint32_t,uint32_t,uint32_t);
 //int GetLeftSensorReading();
 //int GetRightSensorReading();
 //int GetMidSensorReading();

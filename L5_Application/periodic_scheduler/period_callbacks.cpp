@@ -39,10 +39,6 @@
 #include "can.h"
 #include "_can_dbc/can_dbc.h"
 
-//extern int Sen_val[100];
-//extern int Sen_valu[100];
-//extern int Sen_value[100];
-
 extern can_msg_t msg1;
 
 #define STARTLEFT() (LPC_GPIO2->FIOSET = (1 << 0))
@@ -51,22 +47,25 @@ extern can_msg_t msg1;
 #define STOPMID() (LPC_GPIO2->FIOSET = (1 << 2))
 #define STARTRIGHT() (LPC_GPIO2->FIOSET = (1 << 4))
 #define STOPRIGHT() (LPC_GPIO2->FIOSET = (1 << 4))
+#define STARTBACK() (LPC_GPIO2->FIOSET = (1 << 6))
+#define STOPBACK() (LPC_GPIO2->FIOSET = (1 << 6))
 
 typedef enum{
     start = 0,
     left,
     mid,
     right,
+    back,
 }sensorstate;
 
 
 static sensorstate currentstate = start;
 
-int leftfall = 0, midfall = 0, rightfall = 0;
+int leftfall = 0, midfall = 0, rightfall = 0,backfall=0;
 
-extern int PW_Right,PW_Left,PW_Mid;
+extern int PW_Right,PW_Left,PW_Mid,PW_Back;
 
-int leftvalue = -1, midvalue = -1, rightvalue = -1;
+int leftvalue = -1, midvalue = -1, rightvalue = -1,backvalue=-1;
 
 int issensorvaluepresent = -1;
 //extern uint8_t Sen_val[3];
@@ -104,7 +103,7 @@ void period_100Hz(void)
 
     if(issensorvaluepresent==1)
            {
-               sendsensorvalues(leftvalue,midvalue,rightvalue);
+               sendsensorvalues(leftvalue,midvalue,rightvalue,backvalue);
                issensorvaluepresent = -1;
            }
 
@@ -140,10 +139,19 @@ void period_1000Hz(void)
                 if(rightfall == 1){
                     rightvalue = PW_Right;
                     STOPRIGHT();
+                  // STARTBACK();
                     currentstate = start;
                     issensorvaluepresent = 1;
                 }
                 break;
+//        case back:
+//                 if(backfall == 1){
+//                     backvalue = PW_Back;
+//                     STOPBACK();
+//                     currentstate = start;
+//                     issensorvaluepresent = 1;
+//                 }
+//                 break;
 
-    }
+   }
 }

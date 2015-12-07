@@ -29,11 +29,12 @@
 
 extern can_msg_t msg1;
 int SysTimeL=0; int start_left =0; int PW_Left=0; int PW_Right; int PW_Mid; int LeftSensorDistance = 0;
-int end_time;
-int start_mid=0,start_right=0;
+int end_time;int PW_Back;
+int start_mid=0,start_right=0,start_back=0;
+
 //int hasfirstrightinterruptoccured = 0;
 
-extern int leftfall, midfall, rightfall;
+extern int leftfall, midfall, rightfall,backfall;
 
 //int maxf(int* a,int size)
 //{
@@ -61,22 +62,60 @@ extern int leftfall, midfall, rightfall;
 //    }
 //return popular;
 //}
-void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r)
+
+void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r,uint32_t b)
 {
     msg_hdr_t hdr;
     uint64_t *to;
     SENSOR_TX_SONARS_t from;
 
+    if(l<6)
+    {
+        l=6;
+    }
+    else if(l>254)
+    {
+        l=254;
+    }
+    if(m<6)
+        {
+            m=6;
+        }
+        else if(m>254)
+        {
+            m=254;
+        }
+
+    if(r<6)
+        {
+            r=6;
+        }
+        else if(r>254)
+        {
+            r=254;
+        }
+
+    if(b<6)
+        {
+            b=6;
+        }
+        else if(b>254)
+        {
+            b=254;
+        }
+
     from.m0.SENSOR_SONARS_left = l;
     from.m0.SENSOR_SONARS_right = r;
     from.m0.SENSOR_SONARS_middle = m;
+    from.m0.SENSOR_SONARS_rear = b;
+
     to = (uint64_t *)&msg1.data;
     hdr = SENSOR_TX_SONARS_encode(to, &from);
     msg1.msg_id = hdr.mid;
     msg1.frame_fields.data_len = hdr.dlc;
 
     CAN_tx(can1, &msg1, 100);
-    if(l<20)
+    if(l<35)
     {
         LE.on(1);
     }
@@ -84,7 +123,7 @@ void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r)
     {
         LE.off(1);
     }
-    if(m<0)
+    if(m<40)
     {
             LE.on(2);
     }
@@ -92,7 +131,7 @@ void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r)
     {
             LE.off(2);
     }
-    if(r<30)
+    if(r<35)
     {
             LE.on(3);
     }
@@ -100,6 +139,16 @@ void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r)
     {
             LE.off(3);
     }
+    if(b<40)
+        {
+                LE.on(4);
+        }
+        else
+        {
+                LE.off(4);
+        }
+
+
 //    LOG_INFO("Left val %i",l);
    // LOG_INFO("Right val %i",r);
    // LOG_INFO("Middle val %i",m);
@@ -242,4 +291,25 @@ void eintCallbackmid_Fall()
 //}
 
 
+void InitInterruptBack()
+{
+    LPC_GPIO2->FIODIR |= (1 << 6);
+        LPC_GPIO2->FIOCLR = (1 << 6);
+        LPC_GPIO2->FIODIR &= ~(1 << 7); //set as input
+    eint3_enable_port2(7, eint_rising_edge, eintCallbackback_Rise);
+    eint3_enable_port2(7, eint_falling_edge, eintCallbackback_Fall);
+
+}
+
+void eintCallbackback_Rise()
+{
+        start_back = (int) sys_get_uptime_us();
+}
+
+void eintCallbackback_Fall()
+{
+    PW_Back = ((int) sys_get_uptime_us() - start_back)/147;
+    backfall = 1;
+    start_back=0;
+}
 

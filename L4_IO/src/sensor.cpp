@@ -149,7 +149,7 @@ void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r,uint32_t b)
         }
 
 
-//    LOG_INFO("Left val %i",l);
+    LOG_INFO("Left val %i",l);
    // LOG_INFO("Right val %i",r);
    // LOG_INFO("Middle val %i",m);
 }
@@ -158,8 +158,8 @@ void InitInterruptLeft()
     LPC_GPIO2->FIODIR |= (1 << 0);
         LPC_GPIO2->FIOCLR = (1 << 0);
         LPC_GPIO2->FIODIR &= ~(1 << 1); //set as input
-    eint3_enable_port2(1, eint_rising_edge, eintCallbackleft_Rise);
-    eint3_enable_port2(1, eint_falling_edge, eintCallbackleft_Fall);
+    eint3_enable_port2(0, eint_rising_edge, eintCallbackleft_Rise);
+    eint3_enable_port2(0, eint_falling_edge, eintCallbackleft_Fall);
 
 }
 
@@ -198,11 +198,11 @@ void eintCallbackleft_Fall()
 
 void InitInterruptRight()
 {
-    LPC_GPIO2->FIODIR |= (1 << 4);
-    LPC_GPIO2->FIOCLR = (1 << 4);
-    LPC_GPIO2->FIODIR &= ~(1 << 5); //set as input
-    eint3_enable_port2(5, eint_rising_edge, eintCallbackright_Rise);
-    eint3_enable_port2(5, eint_falling_edge, eintCallbackright_Fall);
+    LPC_GPIO2->FIODIR |= (1 << 5);
+    LPC_GPIO2->FIOCLR = (1 << 5);
+    LPC_GPIO2->FIODIR &= ~(1 << 4); //set as input
+    eint3_enable_port2(4, eint_rising_edge, eintCallbackright_Rise);
+    eint3_enable_port2(4, eint_falling_edge, eintCallbackright_Fall);
 }
 
 
@@ -250,11 +250,11 @@ void eintCallbackright_Fall()
 
 void InitInterruptMid()
 {
-    LPC_GPIO2->FIODIR |= (1 << 2);
-        LPC_GPIO2->FIOCLR = (1 << 2);
-         LPC_GPIO2->FIODIR &= ~(1 << 3); //set as input
-    eint3_enable_port2(3, eint_rising_edge, eintCallbackmid_Rise);
-    eint3_enable_port2(3, eint_falling_edge, eintCallbackmid_Fall);
+    LPC_GPIO2->FIODIR |= (1 << 3);
+        LPC_GPIO2->FIOCLR = (1 << 3);
+         LPC_GPIO2->FIODIR &= ~(1 << 2); //set as input
+    eint3_enable_port2(2, eint_rising_edge, eintCallbackmid_Rise);
+    eint3_enable_port2(2, eint_falling_edge, eintCallbackmid_Fall);
 }
 
 void eintCallbackmid_Rise()

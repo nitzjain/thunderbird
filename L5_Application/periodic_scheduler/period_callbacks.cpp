@@ -41,12 +41,12 @@
 
 extern can_msg_t msg1;
 
-#define STARTLEFT() (LPC_GPIO2->FIOSET = (1 << 0))
-#define STOPLEFT() (LPC_GPIO2->FIOCLR = (1 << 0))
-#define STARTMID() (LPC_GPIO2->FIOSET = (1 << 2))
-#define STOPMID() (LPC_GPIO2->FIOSET = (1 << 2))
-#define STARTRIGHT() (LPC_GPIO2->FIOSET = (1 << 4))
-#define STOPRIGHT() (LPC_GPIO2->FIOSET = (1 << 4))
+#define STARTLEFT() (LPC_GPIO2->FIOSET = (1 << 1))
+#define STOPLEFT() (LPC_GPIO2->FIOCLR = (1 << 1))
+#define STARTMID() (LPC_GPIO2->FIOSET = (1 << 3))
+#define STOPMID() (LPC_GPIO2->FIOSET = (1 << 3))
+#define STARTRIGHT() (LPC_GPIO2->FIOSET = (1 << 5))
+#define STOPRIGHT() (LPC_GPIO2->FIOSET = (1 << 5))
 #define STARTBACK() (LPC_GPIO2->FIOSET = (1 << 6))
 #define STOPBACK() (LPC_GPIO2->FIOSET = (1 << 6))
 
@@ -90,22 +90,23 @@ bool period_reg_tlm(void)
 
 void period_1Hz(void)
 {
-
+// printf("currentstate %d",currentstate);
 }
 
 void period_10Hz(void)
 {
+
+    if(issensorvaluepresent==1)
+    {
+        sendsensorvalues(leftvalue ,midvalue,rightvalue,backvalue);
+        issensorvaluepresent = -1;
+    }
 
 }
 
 void period_100Hz(void)
 {
 
-    if(issensorvaluepresent==1)
-           {
-               sendsensorvalues(leftvalue,midvalue,rightvalue,backvalue);
-               issensorvaluepresent = -1;
-           }
 
 }
 
@@ -124,6 +125,7 @@ void period_1000Hz(void)
                 STARTMID();
                 midfall = -1;
                 currentstate = mid;
+
             }
             break;
         case mid:

@@ -27,7 +27,9 @@ This is the android branch
  */
 #include "tasks.hpp"
 #include "examples/examples.hpp"
-
+#include "uart2.hpp"
+#include "utilities.h"
+#include "stdio.h"
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -42,6 +44,67 @@ This is the android branch
  *        In either case, you should avoid using this bus or interfacing to external components because
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
+void uart2putstr(char* c_string);
+void uart2putch(char out);
+
+void uart2putstr(char c_string[])
+{
+    char* p = (char*) c_string;
+    while(*p)
+    {
+        uart2putch(*p);
+        p++;
+    }
+}
+
+void uart2putch(char out)
+{
+    LPC_UART2->THR = out;
+    while(! BIT(LPC_UART2->LSR).b6);
+}
+
+class bluetooth_task: public scheduler_task
+{
+    private:
+    public:
+        bluetooth_task(uint8_t priority) :
+            scheduler_task("bluetooth task", 1024, priority){
+            //NOTHING
+    }
+
+        bool run(void *p)
+        {
+            static int initflag = 0;
+
+            if(initflag == 0){
+                Uart2& uart2 = Uart2::getInstance();
+
+                  uart2.init(38400,1000,1000);
+
+                  delay_ms(1000);
+                  uart2putstr("\r\n+STWMOD=0\r\n");
+                  uart2putstr("\r\n+STNA=Athavan-st\r\n");
+                  uart2putstr("\r\n+STAUTO=0\r\n");
+                  uart2putstr("\r\n+STOAUT=1\r\n");
+                  uart2putstr("\r\n +STPIN=0000\r\n");
+                  delay_ms(2000); // This delay is required.
+                  uart2putstr("\r\n+INQ=1\r\n");
+                  delay_ms(2000); // This delay is required.
+
+                  initflag = 1;
+            }
+            Uart2& uart2 = Uart2::getInstance();
+
+            static char c;
+                while(uart2.getChar(&c,0)) {
+                    //temp_String[i++] = c;
+                    printf("%c",c);
+                }
+
+            return true;
+        }
+};
+
 int main(void)
 {
     /**
@@ -54,13 +117,14 @@ int main(void)
      * such that it can save remote control codes to non-volatile memory.  IR remote
      * control codes can be learned by typing the "learn" terminal command.
      */
-    scheduler_add_task(new terminalTask(PRIORITY_HIGH));
+    //scheduler_add_task(new terminalTask(PRIORITY_HIGH));
+    scheduler_add_task(new bluetooth_task(PRIORITY_CRITICAL));
 
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
-    scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
+    //scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 1
+    #if 0
     scheduler_add_task(new periodicSchedulerTask());
     #endif
 

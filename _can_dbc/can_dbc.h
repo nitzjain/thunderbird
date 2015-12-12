@@ -1,4 +1,4 @@
-/// DBC file: 243.dbc    Self node: SENSOR
+/// DBC file: ../_can_dbc/243.dbc    Self node: SENSOR
 /// This file should be included by a source file, for example: #include "generated.c"
 #ifndef __GENEARTED_DBC_PARSER
 #define __GENERATED_DBC_PARSER
@@ -35,10 +35,10 @@ typedef struct {
 
 /// Struct for MUX: m0
 typedef struct {
-    float SENSOR_SONARS_left;                 ///< B19:8  Min: 0 Max: 400   Destination: DRIVER,IO
-    float SENSOR_SONARS_middle;               ///< B31:20   Destination: DRIVER,IO
-    float SENSOR_SONARS_right;                ///< B43:32   Destination: DRIVER,IO
-    float SENSOR_SONARS_rear;                 ///< B55:44   Destination: DRIVER,IO
+    float SENSOR_SONARS_left;                 ///< B19:8  Min: 0 Max: 400   Destination: DRIVER,IO,MOTOR
+    float SENSOR_SONARS_middle;               ///< B31:20   Destination: DRIVER,IO,MOTOR
+    float SENSOR_SONARS_right;                ///< B43:32   Destination: DRIVER,IO,MOTOR
+    float SENSOR_SONARS_rear;                 ///< B55:44   Destination: DRIVER,IO,MOTOR
 
     mia_info_t mia_info;
 } SENSOR_TX_SONARS_m0_t;
@@ -55,11 +55,11 @@ typedef struct {
 
 /// Struct with all the child MUX'd signals
 typedef struct {
-    uint8_t SENSOR_SONARS_mux : 4;            ///< B3:0   Destination: DRIVER,IO
-    uint8_t SENSOR_SONARS_s1_fault : 1;       ///< B4:4   Destination: DRIVER,IO
-    uint8_t SENSOR_SONARS_s2_fault : 1;       ///< B5:5   Destination: DRIVER,IO
-    uint8_t SENSOR_SONARS_s3_fault : 1;       ///< B6:6   Destination: DRIVER,IO
-    uint8_t SENSOR_SONARS_s4_fault : 1;       ///< B7:7   Destination: DRIVER,IO
+    uint8_t SENSOR_SONARS_mux : 4;            ///< B3:0   Destination: DRIVER,IO,MOTOR
+    uint8_t SENSOR_SONARS_s1_fault : 1;       ///< B4:4   Destination: DRIVER,IO,MOTOR
+    uint8_t SENSOR_SONARS_s2_fault : 1;       ///< B5:5   Destination: DRIVER,IO,MOTOR
+    uint8_t SENSOR_SONARS_s3_fault : 1;       ///< B6:6   Destination: DRIVER,IO,MOTOR
+    uint8_t SENSOR_SONARS_s4_fault : 1;       ///< B7:7   Destination: DRIVER,IO,MOTOR
 
     SENSOR_TX_SONARS_m0_t m0; ///< MUX'd structure
     SENSOR_TX_SONARS_m1_t m1; ///< MUX'd structure

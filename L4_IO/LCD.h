@@ -7,6 +7,8 @@
 
 /* Declare the variables to print on the screen below*/
 extern int white_count;
+extern float sleft, smiddle, sright, srear;
+char buf1[100], buf2[100],buf3[100],buf4[100],buf5[100];
 
 void LCD_Display()
 {
@@ -19,11 +21,11 @@ void LCD_Display()
         uart_flag = 0;
     }
 
-    char buf1[100], buf2[100],buf3[100],buf4[100],buf5[100];
+
     urt.putline("$CLR_SCR");
 
     /* LINE 1 - TITLE*/
-    urt.putline("     THUNDERBIRD    ");
+    urt.putline("THUNDERBIRD");
 
     /* LINE 2 - SPEED and */
     urt.put("REVS = ");
@@ -40,24 +42,21 @@ void LCD_Display()
     urt.putline(buf1);
 
     /* LINE 4 - SENSORS*/
-    urt.put("L=");
-    static int s1 = 0;
-    sprintf(buf2, "%d", s1);
-    s1 += 1;
-    if(s1>99)
-    {
-        s1=0;
-    }
+    urt.put("L");
+    sprintf(buf2, "%3d", (int)sleft);
+    sprintf(buf3,"%3d",(int)smiddle);
+    sprintf(buf4,"%3d",(int)sright);
+    sprintf(buf5,"%3d",(int)0);
     urt.put(buf2);
     //2 spaces
-    urt.put(" F=");
-    urt.put(buf2);
+    urt.put(" M");
+    urt.put(buf3);
     //2 spaces
-    urt.put(" R=");
-    urt.put(buf2);
+    urt.put(" R");
+    urt.put(buf4);
     //2 spaces
-    urt.put(" B=");
-    urt.put(buf2);
+    urt.put(" B");
+    urt.put(buf5);
 
     /*Get revolutions and calculate speed*/
     //printf("Revolutions = %d\n", white_count);

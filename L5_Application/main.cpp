@@ -96,7 +96,8 @@ class button: public scheduler_task
             if (SW.getSwitch(1))
             {
                 printf("Move forward\n");
-                pwm1.set(7.9);
+                pwm1.set(7.8);
+                pwm2.set(5.5);
             }
 
             else if(SW.getSwitch(2))
@@ -104,6 +105,7 @@ class button: public scheduler_task
             {
                 printf("Move backward\n");
                 pwm1.set(7.5);
+                pwm2.set(8.5);
             }
 
             else if(SW.getSwitch(3))
@@ -136,7 +138,7 @@ int main(void)
 
     eint3_enable_port2(7, eint_rising_edge, count_interrupts);
     scheduler_add_task(new periodicSchedulerTask());
-   // scheduler_add_task(new button(PRIORITY_HIGH));
+    //scheduler_add_task(new button(PRIORITY_HIGH));
     scheduler_start();
     return -1;
 

@@ -45,7 +45,9 @@
 #include "LCD.h"
 #include "speed.h"
 
-typedef enum
+
+typedef enum direction
+
 {
     stop = 0,
     straight = 1,
@@ -54,7 +56,7 @@ typedef enum
     reverse = 4,
     start = 5,
     slight_left = 6,
-    slight_right = 7
+    slight_right = 7,
 } direction_t;
 
 /// This is the stack size used for each of the period tasks
@@ -68,11 +70,16 @@ can_msg_t control;
 #define up_R  7.6
 #define down  5.5
 #define SL    5
+#define S_SL  6.25
 #define SR    8
+#define S_SR  7.5
 
 int avg_speed = 0;
-float final_time = 0, pwm_mod = 7.9;
-int counter = 0;
+float final_time = 0, pwm_mod = 7.95, Steer_PWM = 5;
+int counter = 0, speedchanged;
+/*Sets the motor speed according to master*/
+int lastval = 0;
+static bool const_speed = 0;
 
 GPIO rpm(P2_7); // Control P1.20
 
@@ -103,8 +110,6 @@ bool period_reg_tlm(void)
     return true; // Must return true upon success
 }
 
-/*Sets the motor speed according to master*/
-int lastval = 0;
 void period_1Hz(void)
 {
     printf("\nWHite Count = %d", white_count);
@@ -115,6 +120,8 @@ void period_10Hz(void)
 {
     //moved the LCD and maintain speed to 100 Hz function
     LCD_Display();
+    //moved the LCD and maintain speed to 1000 Hz function
+    //LCD_Display();
 }
 
 void period_100Hz(void)
@@ -135,7 +142,6 @@ void period_100Hz(void)
         dc_motor_instance.setDriveMotor(7.5); //Initialize the motor
         steer.setSteerMotor(7);
         flag++;
-
     }
 
     while (CAN_rx(can1, &control, 0))

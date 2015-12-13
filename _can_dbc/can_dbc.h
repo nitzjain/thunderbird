@@ -20,6 +20,7 @@ typedef struct {
 } msg_hdr_t; 
 
 static const msg_hdr_t DRIVER_TX_HEARTBEAT_HDR =              { 0xA0, 1 };
+static const msg_hdr_t SENSOR_TX_sensorback_HDR =             { 0xA1, 1 };
 static const msg_hdr_t SENSOR_TX_SONARS_HDR =                 {  200, 6 };
 static const msg_hdr_t DRIVER_TX_MOTOR_CMD_HDR =              { 0X020, 1 };
 
@@ -30,6 +31,14 @@ typedef struct {
 
     mia_info_t mia_info;
 } DRIVER_TX_HEARTBEAT_t;
+
+
+/// Message: sensorback from 'SENSOR', DLC: 1 byte(s), MID: 0xA1
+typedef struct {
+    uint8_t SENSOR_BACK_cmd;                  ///< B7:0   Destination: DRIVER,MOTOR,GPS,IO
+
+    mia_info_t mia_info;
+} SENSOR_TX_sensorback_t;
 
 /// @{ MUX'd message: SONARS
 
@@ -74,6 +83,21 @@ extern const uint32_t                                         HEARTBEAT__MIA_MS;
 extern const DRIVER_TX_HEARTBEAT_t                            HEARTBEAT__MIA_MSG;
 
 /// Not generating code for DRIVER_TX_HEARTBEAT_encode() since the sender is DRIVER and we are SENSOR
+
+/// Encode SENSOR's 'sensorback' message
+/// @returns the message header of this message
+static msg_hdr_t SENSOR_TX_sensorback_encode(uint64_t *to, SENSOR_TX_sensorback_t *from)
+{
+    *to = 0; ///< Default the entire destination data with zeroes
+    uint8_t *bytes = (uint8_t*) to;
+    uint64_t raw_signal;
+
+    raw_signal = ((uint64_t)(((from->SENSOR_BACK_cmd - (0)) / 1.0) + 0.5)) & 0xff;
+    bytes[0] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B0
+
+    return SENSOR_TX_sensorback_HDR;
+}
+
 
 /// Encode SENSOR's 'SONARS' message
 /// @returns the message header of this message
@@ -165,6 +189,8 @@ static inline bool DRIVER_TX_HEARTBEAT_decode(DRIVER_TX_HEARTBEAT_t *to, const u
     return success;
 }
 
+
+/// Not generating code for SENSOR_TX_sensorback_decode() since we are not the recipient of any of its signals
 
 /// Not generating code for SENSOR_TX_SONARS_decode() since we are not the recipient of any of its signals
 

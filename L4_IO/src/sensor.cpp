@@ -27,7 +27,7 @@
 #include "file_logger.h"
 #include "_can_dbc/can_dbc.h"
 
-extern can_msg_t msg1;
+extern can_msg_t msg1,msg2;
 int SysTimeL=0; int start_left =0; int PW_Left=0; int PW_Right; int PW_Mid; int LeftSensorDistance = 0;
 int end_time;int PW_Back;
 int start_mid=0,start_right=0,start_back=0;
@@ -41,7 +41,7 @@ void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r,uint32_t b)
     msg_hdr_t hdr;
     uint64_t *to;
     SENSOR_TX_SONARS_t from;
-
+    SENSOR_TX_sensorback_t fromb;
     if(l<6)
     {
         l=6;
@@ -88,6 +88,12 @@ void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r,uint32_t b)
     msg1.frame_fields.data_len = hdr.dlc;
 
     CAN_tx(can1, &msg1, 100);
+    fromb.SENSOR_BACK_cmd =  b;
+    to = (uint64_t *)&msg2.data;
+    hdr = SENSOR_TX_sensorback_encode(to,&fromb);
+    msg2.msg_id = hdr.mid;
+    msg2.frame_fields.data_len = hdr.dlc;
+    CAN_tx(can1, &msg2, 100);
     if(l<35)
     {
         LE.on(1);

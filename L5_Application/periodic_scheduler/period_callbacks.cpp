@@ -45,11 +45,16 @@
 #include "LCD.h"
 #include "speed.h"
 
-#define distance 18  //This is the wheels circumference.
-
 typedef enum
 {
-    stop = 0, straight = 1, left = 2, right = 3, reverse = 4, start = 5
+    stop = 0,
+    straight = 1,
+    left = 2,
+    right = 3,
+    reverse = 4,
+    start = 5,
+    slight_left = 6,
+    slight_right = 7
 } direction_t;
 
 /// This is the stack size used for each of the period tasks
@@ -80,10 +85,10 @@ const uint32_t MOTOR_CMD__MIA_MS = 0;
 const DRIVER_TX_MOTOR_CMD_t MOTOR_CMD__MIA_MSG =
 { 0 };
 
-        float sleft=0;                 ///< B19:8  Min: 0 Max: 400   Destination: DRIVER,IO,MOTOR
-        float smiddle=0;               ///< B31:20   Destination: DRIVER,IO,MOTOR
-        float sright=0;                ///< B43:32   Destination: DRIVER,IO,MOTOR
-        float srear=0;                 ///< B55:44   Destination: DRIVER,IO,MOTOR
+float sleft = 0; ///< B19:8  Min: 0 Max: 400   Destination: DRIVER,IO,MOTOR
+float smiddle = 0; ///< B31:20   Destination: DRIVER,IO,MOTOR
+float sright = 0; ///< B43:32   Destination: DRIVER,IO,MOTOR
+float srear = 0; ///< B55:44   Destination: DRIVER,IO,MOTOR
 
 /*Motor Initialization*/
 bool period_init(void)
@@ -102,11 +107,8 @@ bool period_reg_tlm(void)
 int lastval = 0;
 void period_1Hz(void)
 {
-
-    //LD.setNumber((int)pwm_mod*10);
-    printf("\nWhite count = %d", white_count);
+    printf("\nWHite Count = %d", white_count);
     white_count = 0;
-
 }
 
 void period_10Hz(void)
@@ -119,16 +121,12 @@ void period_100Hz(void)
 {
     DRIVER_TX_MOTOR_CMD_t to;
     SENSOR_TX_SONARS_t tos;
+    SENSOR_TX_sensorback_t tob;
     uint64_t *from;
     msg_hdr_t hdr;
 
     DC_Motor &dc_motor_instance = DC_Motor::getInstance();
     Steer_Motor &steer = Steer_Motor::getInstance();
-
-//    static float desiredpwm = 0;
-//    float newpwm = 0;
-
-    /**/
 
     /*Initializing DC motor*/
     static int flag = 0;
@@ -146,52 +144,35 @@ void period_100Hz(void)
         from = (uint64_t *) &control.data;
         hdr.dlc = control.frame_fields.data_len;
         hdr.mid = control.msg_id;
-        if(control.msg_id == SENSOR_TX_SONARS_HDR.mid)
+        if (control.msg_id == SENSOR_TX_SONARS_HDR.mid)
         {
-            printf("hi\n");
-            if (SENSOR_TX_SONARS_decode(&tos,from,&hdr))
+            if (SENSOR_TX_SONARS_decode(&tos, from, &hdr))
             {
                 sleft = tos.m0.SENSOR_SONARS_left;
                 smiddle = tos.m0.SENSOR_SONARS_middle;
                 sright = tos.m0.SENSOR_SONARS_right;
-                srear = tos.m0.SENSOR_SONARS_rear;
-                printf("l: %2f,m: %2f,r: %2f,b: %2f",sleft,smiddle,sright,srear);
+                //rear sensor
+            }
+        }
+        if (control.msg_id == SENSOR_TX_sensorback_HDR.mid)
+        {
+            if (SENSOR_TX_sensorback_decode(&tob, from, &hdr))
+            {
+                srear = tob.SENSOR_BACK_cmd;
+                printf("srear %d", (int) srear);
             }
         }
         if (control.msg_id == DRIVER_TX_MOTOR_CMD_HDR.mid)
         {
 
-           /*Start the feedback*/
+            /*Start the feedback*/
 
             if (DRIVER_TX_MOTOR_CMD_decode(&to, from, &hdr))
             {
-//                int motor_value = to.MOTOR_CMD_drive;
-//
-//                switch (motor_value)
-//                {
-//                    case 1:
-//                        newpwm = 7.9; //while taking turns
-//                        break;
-//                    case 2:
-//                        newpwm = 7.9; //while going straight
-//                        break;
-//                    default:
-//                        newpwm = 7.5;
-//                        break;
-//                }
-//            }
-//            //No else case for this if |^^
-//            if(newpwm-desiredpwm>0.0010)
-//            {
-//                pwm_mod = newpwm;
-//                desiredpwm = newpwm;
-//            }
                 LD.setNumber(to.MOTOR_CMD_steer);
-
-                if (straight == to.MOTOR_CMD_steer)//go forward - 000
+                if (straight == to.MOTOR_CMD_steer) //go forward - 000
                 {
                     LE.toggle(1);
-                    //dc_motor_instance.setDriveMotor(pwm_mod);
                     maintain_speed();
                     steer.setSteerMotor(7);
                 }
@@ -202,11 +183,21 @@ void period_100Hz(void)
                     //dc_motor_instance.setDriveMotor(pwm_mod);
                     maintain_speed();
                 }
+                else if(slight_left == to.MOTOR_CMD_steer)
+                {
+                    steer.setSteerMotor(6.25);
+                    maintain_speed();
+                }
                 else if (right == to.MOTOR_CMD_steer) //go right 010, 100, 110
                 {
                     LE.toggle(3);
                     steer.setSteerMotor(SR);
                     //dc_motor_instance.setDriveMotor(pwm_mod);
+                    maintain_speed();
+                }
+                else if(slight_right == to.MOTOR_CMD_steer)
+                {
+                    steer.setSteerMotor(7.5);
                     maintain_speed();
                 }
                 else if (reverse == to.MOTOR_CMD_steer) //go back 111, 101
@@ -218,78 +209,13 @@ void period_100Hz(void)
                 }
                 else if (stop == to.MOTOR_CMD_steer)
                 {
-                    LE.toggle(4);
+                    //LE.toggle(4);
                     dc_motor_instance.setDriveMotor(7.5);
                     steer.setSteerMotor(7);
                 }
             }
         }
     }
-#if 0
-//Should add the functionality to control the motor speed using the speed check
-
-    DC_Motor &dc_motor_instance = DC_Motor::getInstance();
-    Steer_Motor &steer = Steer_Motor::getInstance();
-
-    /*Initializing DC motor*/
-    static int flag = 0;
-    if (flag == 0)
-    {
-        dc_motor_instance.setDriveMotor(7.5); //Initialize the motor
-        steer.setSteerMotor(7);
-        flag++;
-    }
-    while (CAN_rx(can1, &control, 0))
-    {
-
-        /* Move forward - */
-        if (control.msg_id == straight) //go forward - 000
-        {
-            if (control.data.bytes[0] == 1)
-            {
-                pwm_mod1 = 8.1;
-                lower_limit = 250, upper_limit = 400;
-            }
-            else if (control.data.bytes[0] == 0)
-            {
-                pwm_mod1 = 7.9;
-                lower_limit = 100, upper_limit = 200;
-            }
-
-            dc_motor_instance.setDriveMotor(pwm_mod1);
-            steer.setSteerMotor(7);
-            printf("straight\n");
-        }
-        else if (control.msg_id == left) //go left 001, 011
-        {
-            dc_motor_instance.setDriveMotor(pwm_mod1);
-            steer.setSteerMotor(SL);
-            printf("left\n");
-            LE.on(2);
-            LE.off(3);
-        }
-        else if (control.msg_id == right) //go right 010, 100, 110
-        {
-            dc_motor_instance.setDriveMotor(pwm_mod1);
-            steer.setSteerMotor(SR);
-            printf("right\n");
-            LE.on(3);
-            LE.off(2);
-        }
-        else if (control.msg_id == stop)
-        {
-            steer.setSteerMotor(7);
-            dc_motor_instance.setDriveMotor(7.5);
-        }
-    }
-
-    if (speedchanged == 1)
-    {
-        dc_motor_instance.setDriveMotor(pwm_mod1);
-        steer.setSteerMotor(7);
-        speedchanged = 0;
-    }
-#endif
 }
 
 void period_1000Hz(void)

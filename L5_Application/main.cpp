@@ -72,61 +72,12 @@
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 
-class button: public scheduler_task
-{
-    public:
-        button(uint8_t priority) :
-                scheduler_task("wireless", 512, priority)
-        {
-            /* Nothing to init */
-        }
-
-        bool run(void *p)
-        {
-
-            PWM pwm1(PWM::pwm1, 50);
-            PWM pwm2(PWM::pwm2, 50);
-            static int flag = 0;
-            if (!flag)
-            {
-                pwm1.set(7.5);
-                pwm2.set(7);
-                flag++;
-            }
-            if (SW.getSwitch(1))
-            {
-                printf("Move forward\n");
-                pwm1.set(7.8);
-                pwm2.set(5.5);
-            }
-
-            else if(SW.getSwitch(2))
-
-            {
-                printf("Move backward\n");
-                pwm1.set(7.5);
-                pwm2.set(8.5);
-            }
-
-            else if(SW.getSwitch(3))
-
-            {
-                printf("Move backward\n");
-                pwm1.set(8.2);
-            }
-            delay_ms(200);
-            return true;
-        }
-};
-
 
 int white_count = 0;
 
 void count_interrupts()
 {
     white_count++;
-    //LD.setNumber(8);
-
 }
 
 int main(void)
@@ -138,7 +89,6 @@ int main(void)
 
     eint3_enable_port2(7, eint_rising_edge, count_interrupts);
     scheduler_add_task(new periodicSchedulerTask());
-    //scheduler_add_task(new button(PRIORITY_HIGH));
     scheduler_start();
     return -1;
 

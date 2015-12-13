@@ -32,36 +32,9 @@ int SysTimeL=0; int start_left =0; int PW_Left=0; int PW_Right; int PW_Mid; int 
 int end_time;int PW_Back;
 int start_mid=0,start_right=0,start_back=0;
 
-//int hasfirstrightinterruptoccured = 0;
 
 extern int leftfall, midfall, rightfall,backfall;
 
-//int maxf(int* a,int size)
-//{
-//    int i,j;
-//int popular = a[0];
-//int temp=0, tempCount, count=1;
-//
-//        for (i=0;i<size;i++)
-//    {
-//        tempCount = 0;
-//        temp=a[i];
-//        tempCount++;
-//            for(j=i+1;j<10;j++)
-//        {
-//            if(a[j] == temp)
-//            {
-//                tempCount++;
-//                if(tempCount > count)
-//                {
-//                    popular = temp;
-//                count = tempCount;
-//                }
-//            }
-//        }
-//    }
-//return popular;
-//}
 
 void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r,uint32_t b)
 {
@@ -149,7 +122,7 @@ void sendsensorvalues(uint32_t l,uint32_t m,uint32_t r,uint32_t b)
         }
 
 
-    printf("back val %i",b);
+//    printf("back val %i",b);
    // LOG_INFO("Right val %i",r);
    // LOG_INFO("Middle val %i",m);
 }
@@ -271,24 +244,6 @@ void eintCallbackmid_Fall()
 
 }
 
-//int GetMidSensorReading()
-//{
-//    int i=0;  int MidSenVal[10];
-//    LPC_GPIO2->FIOSET = (1 << 2);
-//
-//        while(i<10)
-//        {
-//            MidSenVal[i]=PW_Mid;
-////            delay_ms(10);
-////            printf("%i Mid value is: %i\n ",i,MidSenVal[i]);
-//            i++;
-//        }
-//       // printf("element is %i\n",leftSenVal[9]);
-//        LPC_GPIO2->FIOCLR = (1 << 2);
-//        return maxf(MidSenVal,10);
-//
-//
-//}
 
 
 void InitInterruptBack()

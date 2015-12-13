@@ -90,28 +90,30 @@ bool period_reg_tlm(void)
 
 void period_1Hz(void)
 {
- printf("currentstate %d",currentstate);
+// printf("currentstate %d",currentstate);
 }
 
 void period_10Hz(void)
 {
 
-    if(issensorvaluepresent==1)
-    {
-        sendsensorvalues(leftvalue ,midvalue,rightvalue,backvalue);
-        issensorvaluepresent = -1;
-    }
+
+
 
 }
 
 void period_100Hz(void)
 {
-
+    if(issensorvaluepresent==1)
+        {
+            sendsensorvalues(leftvalue ,midvalue,rightvalue,backvalue);
+            issensorvaluepresent = -1;
+        }
 
 }
 
 void period_1000Hz(void)
 {
+    static int bcounter = 0;
     switch(currentstate){
         case start:
             STARTLEFT();
@@ -141,19 +143,21 @@ void period_1000Hz(void)
                 if(rightfall == 1){
                     rightvalue = PW_Right;
                     STOPRIGHT();
-                    //STARTBACK();
-                    currentstate = start;
-                    issensorvaluepresent = 1;
+                    STARTBACK();
+                    backfall = -1;
+                    currentstate = back;
+                //    issensorvaluepresent = 1;
                 }
                 break;
         case back:
-                 if(backfall == 1){
+                 if(backfall == 1||bcounter>200){
                      backvalue = PW_Back;
                      STOPBACK();
                      currentstate = start;
-
+                     issensorvaluepresent = 1;
+                     bcounter = 0;
                  }
                  break;
-
    }
+    bcounter++;
 }

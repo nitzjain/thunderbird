@@ -43,12 +43,7 @@
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 void reset_can_bus();
-<<<<<<< HEAD
-direction_t direction_computation(int sensor_left, int sensor_straight,
-        int sensor_right, int sensor_reverse);
-=======
 
->>>>>>> dc69a119307639852584e50fd2b5638aa2e32a21
 
 static int turnedon = 0;
 static int firstturnedon =0;
@@ -102,8 +97,6 @@ void period_100Hz(void)
                                val.m0.SENSOR_SONARS_middle,
                                val.m0.SENSOR_SONARS_right,
                                val.m0.SENSOR_SONARS_rear);
-<<<<<<< HEAD
-=======
     bool b = isnearobstacle(val.m0.SENSOR_SONARS_left,
                                val.m0.SENSOR_SONARS_middle,
                                val.m0.SENSOR_SONARS_right);
@@ -115,7 +108,6 @@ void period_100Hz(void)
                                val.m0.SENSOR_SONARS_rear,
                                dir);
     }
->>>>>>> dc69a119307639852584e50fd2b5638aa2e32a21
     LD.setNumber(dir);
     if (speed_counter > 50)
         motor_data.MOTOR_CMD_drive = 2;

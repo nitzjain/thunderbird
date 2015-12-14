@@ -40,9 +40,14 @@
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
-int calculate_sector();
 
 
+float ToRadian(float degree);
+float ToDegree(float radian);
+float GetBearing(gps_data_t data_gps, gps_data_t chkp_data);
+int calculate_sector(float angle);
+void GetDirection(direction_t *move_to_dir,int bearing_sector,int heading_sector);
+float get_bearing_new(float lat1,float lat2, float lng1, float lng2);
 void period_1Hz(void)
 {
 
@@ -51,20 +56,23 @@ void period_1Hz(void)
 
 void period_10Hz(void)
 {
-    //printf("10");
-    //static QueueHandle_t gps_data_q = scheduler_task::getSharedObject("gps_queue");
-    //gps_data_t data_gps;
-
-    /*if (NULL == gps_data_q) {
+    gps_data_t data_gps;
+    gps_data_t chkp_data;
+    direction_t move_to_dir;
+#if 1
+    static QueueHandle_t gps_data_q = scheduler_task::getSharedObject("gps_queue");
+    if (NULL == gps_data_q) {
         printf("data-load error");
     }
     else if (xQueueReceive(gps_data_q, &data_gps, 0))
     {
-        printf("longitude: %f",data_gps.Longitude);
+        printf(" %f, %f :",data_gps.Longitude, data_gps.Latitude);
     }
-*/
-    static QueueHandle_t compass_data_q = scheduler_task::getSharedObject("compass_queue");
+#endif
     compass_data_t data_compass;
+#if 0
+    static QueueHandle_t compass_data_q = scheduler_task::getSharedObject("compass_queue");
+
 
     if (NULL == compass_data_q) {
         printf("data-load error");
@@ -73,8 +81,23 @@ void period_10Hz(void)
     {
         printf("yaw: %f",data_compass.yaw);
     }
-    //calculate_desired_angle();
-    //int sector = calculate_sector();
+    //int sector = calculate_sector(GetBearing(data_gps,chkp_data),data_compass.yaw);
+
+#endif
+    chkp_data.Latitude = 37.336194;
+    chkp_data.Longitude = 121.883162;
+    //data_gps.Latitude = 37.336834;
+    //data_gps.Longitude = 121.881977;
+    int bearing_sector = calculate_sector(GetBearing(data_gps,chkp_data));
+    int heading_sector = calculate_sector(3.2);//data_compass.yaw);
+    printf("Data: %d, %d, %f",bearing_sector,heading_sector,GetBearing(data_gps,chkp_data));//get_bearing_new(37.336834,37.336194,121.881977,121.883162));
+
+    if(bearing_sector == -1 || heading_sector == -1)
+        printf("Error: Sector is wrong, Bearing sector = %d, Heading_sector = %d",bearing_sector,heading_sector);
+    else
+    GetDirection(&move_to_dir,bearing_sector,heading_sector);
+    printf("direction is %d,%d",move_to_dir.angle,move_to_dir.dir);
+
     /*
     can_msg_t msg;
     GPS_TX_COORDINATES_t gps_c;

@@ -135,7 +135,7 @@ void logger_set_printf(logger_msg_t type, bool enable);
 /**
  * Macro to flush the logs.
  * You can flush it using logger_send_flush_request() but the MACRO is provided
- * just to be consistent with the other logger macros where a function is not used.
+  * just to be consistent with the other logger macros where a function is not used.
  *
  * @note Flushing is not needed when the OS is running.
  */

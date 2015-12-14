@@ -25,4 +25,9 @@ typedef struct gps_data
 }gps_data_t;
 
 
+typedef struct directions{
+        int dir;   //0: Left, 1: Right
+        int angle;
+}direction_t;
+
 #endif /* L4_IO_GPS_DATATYPE_H_ */

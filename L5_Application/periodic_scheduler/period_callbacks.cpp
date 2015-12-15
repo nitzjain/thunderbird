@@ -96,6 +96,8 @@ float sleft = 0; ///< B19:8  Min: 0 Max: 400   Destination: DRIVER,IO,MOTOR
 float smiddle = 0; ///< B31:20   Destination: DRIVER,IO,MOTOR
 float sright = 0; ///< B43:32   Destination: DRIVER,IO,MOTOR
 float srear = 0; ///< B55:44   Destination: DRIVER,IO,MOTOR
+int degrees = 0;
+float gps_start, gps_end;
 
 /*Motor Initialization*/
 bool period_init(void)
@@ -112,7 +114,7 @@ bool period_reg_tlm(void)
 
 void period_1Hz(void)
 {
-    printf("\nWHite Count = %d", white_count);
+    //printf("\nWHite Count = %d", white_count);
     white_count = 0;
 }
 
@@ -120,8 +122,6 @@ void period_10Hz(void)
 {
     //moved the LCD and maintain speed to 100 Hz function
     LCD_Display();
-    //moved the LCD and maintain speed to 1000 Hz function
-    //LCD_Display();
 }
 
 void period_100Hz(void)
@@ -146,10 +146,11 @@ void period_100Hz(void)
 
     while (CAN_rx(can1, &control, 0))
     {
-
         from = (uint64_t *) &control.data;
         hdr.dlc = control.frame_fields.data_len;
         hdr.mid = control.msg_id;
+
+        /*Displaying Front Sensors - Left, Middle and Right*/
         if (control.msg_id == SENSOR_TX_SONARS_HDR.mid)
         {
             if (SENSOR_TX_SONARS_decode(&tos, from, &hdr))
@@ -157,20 +158,33 @@ void period_100Hz(void)
                 sleft = tos.m0.SENSOR_SONARS_left;
                 smiddle = tos.m0.SENSOR_SONARS_middle;
                 sright = tos.m0.SENSOR_SONARS_right;
-                //rear sensor
             }
         }
+
+        /*Back Sensor*/
         if (control.msg_id == SENSOR_TX_sensorback_HDR.mid)
         {
             if (SENSOR_TX_sensorback_decode(&tob, from, &hdr))
             {
                 srear = tob.SENSOR_BACK_cmd;
-                printf("srear %d", (int) srear);
             }
         }
+
+        /*Compass Information*/
+        if(control.msg_id == 0xFE)
+        {
+            degrees = 32;   //0 - 360
+        }
+
+        /*GPS Information*/
+        if(control.msg_id == 0x564)
+        {
+            gps_start = 42;
+            gps_end = 62;
+        }
+
         if (control.msg_id == DRIVER_TX_MOTOR_CMD_HDR.mid)
         {
-
             /*Start the feedback*/
 
             if (DRIVER_TX_MOTOR_CMD_decode(&to, from, &hdr))

@@ -33,9 +33,9 @@ void maintain_speed()
         DC_Motor &dc_motor_instance = DC_Motor::getInstance();
 
         /*Becareful about the deadzones*/
-        if (pwm_mod <= 7.8)
+        if (pwm_mod <= 7.9)
         {
-            pwm_mod = 7.8; //recovers the motors
+            pwm_mod = 7.9; //recovers the motors
         }
     }
     else if ((white_count >= 31) && (white_count < 40)) //super fast
@@ -43,9 +43,9 @@ void maintain_speed()
         pwm_mod = pwm_mod - 0.02;
         DC_Motor &dc_motor_instance = DC_Motor::getInstance();
         /*Becareful about the deadzones*/
-        if (pwm_mod <= 7.8)
+        if (pwm_mod <= 7.9)
         {
-            pwm_mod = 7.8; //recovers the motors
+            pwm_mod = 7.9; //recovers the motors
         }
     }
 

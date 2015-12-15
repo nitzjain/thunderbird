@@ -49,6 +49,7 @@ static int turnedon = 0;
 static int firstturnedon =0;
 uint8_t speed_counter = 0;
 SENSOR_TX_SONARS_t val;
+SENSOR_TX_sensorback_t back_sensor;
 const can_t mycan = can1;
 can_msg_t msg;
 direction_t dir;
@@ -59,16 +60,6 @@ uint64_t *from;
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    const can_t mycan = can1;
-
-    Storage::append("log_messages","--Log message file Master Controller--", 40, 0);
-
-
-    if(!CAN_init(mycan,100, 32*8, 32*8, NULL,NULL))
-        return false;
-
-    CAN_reset_bus(mycan);
-    CAN_bypass_filter_accept_all_msgs();
 
 
     return true; // Must return true upon success
@@ -91,7 +82,7 @@ void period_1Hz(void)
 void period_100Hz(void)
 {
 
-
+    val.m0.SENSOR_SONARS_rear = back_sensor.SENSOR_BACK_cmd;
 
     dir = direction_computation(val.m0.SENSOR_SONARS_left,
                                val.m0.SENSOR_SONARS_middle,
@@ -164,7 +155,7 @@ void period_10Hz(void)
 
         if (CAN_tx(mycan, &msg, 0))
         {
-            printf("Message sent  %d\n", msg.data.bytes[0]);
+            //printf("Message sent  %d\n", msg.data.bytes[0]);
         }
 
     }
@@ -184,15 +175,18 @@ void period_10Hz(void)
 
                     if (!SENSOR_TX_SONARS_decode(&val, from, &hdr))
                         printf("\nDecode failed");
+                    break;
+                case 0xA1:
+                    hdr.mid = msg.msg_id;
+                    hdr.dlc = msg.frame_fields.data_len;
+                    from = (uint64_t *) &msg.data;
 
-
-
-
+                    if (!SENSOR_TX_sensorback_decode(&back_sensor, from, &hdr))
+                        printf("\nDecode failed");
                     break;
 
                 default:
-                    printf("Unknown message received, msg id %d\n",
-                            (int) msg.msg_id);
+                    //printf("Unknown message received, msg id %d\n", (int) msg.msg_id);
                     break;
             } // Switch
         } // while*/

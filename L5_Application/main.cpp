@@ -79,6 +79,19 @@ int main(void)
 
     //scheduler_add_task(new update_sensor_values(PRIORITY_HIGH));
     //scheduler_add_task(new motor_input(PRIORITY_HIGH));
+    const can_t mycan = can1;
+
+    //Storage::append("log_messages","--Log message file Master Controller--", 40, 0);
+
+
+    if(!CAN_init(mycan, 250, 1024, 1024, NULL,NULL))
+        return false;
+
+    CAN_reset_bus(mycan);
+    CAN_bypass_filter_accept_all_msgs();
+
+
+
 
     #if 0
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */

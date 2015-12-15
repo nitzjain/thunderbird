@@ -38,29 +38,28 @@ BU_: NOONE SENSOR DRIVER MOTOR GPS IO
 BO_ 0xA0 HEARTBEAT: 1 DRIVER
  SG_ DRIVER_HEARTBEAT_cmd : 0|8@1+ (1,0) [0|0] "" SENSOR,MOTOR,GPS
  
+BO_ 0xA1 sensorback: 1 SENSOR
+ SG_ SENSOR_BACK_cmd : 0|8@1+ (1,0) [0|0] "" DRIVER,MOTOR,GPS,IO
 
 BO_ 200 SONARS: 6 SENSOR
- SG_ SENSOR_SONARS_mux M : 0|4@1+ (1,0) [0|0] "" DRIVER,IO
- SG_ SENSOR_SONARS_s1_fault : 4|1@1+ (1,0) [0|0] "" DRIVER,IO
- SG_ SENSOR_SONARS_s2_fault : 5|1@1+ (1,0) [0|0] "" DRIVER,IO
- SG_ SENSOR_SONARS_s3_fault : 6|1@1+ (1,0) [0|0] "" DRIVER,IO
- SG_ SENSOR_SONARS_s4_fault : 7|1@1+ (1,0) [0|0] "" DRIVER,IO
- SG_ SENSOR_SONARS_left m0 : 8|12@1+ (0.1,0) [0|400] "" DRIVER,IO
- SG_ SENSOR_SONARS_middle m0 : 20|12@1+ (0.1,0) [0|0] "" DRIVER,IO
- SG_ SENSOR_SONARS_right m0 : 32|12@1+ (0.1,0) [0|0] "" DRIVER,IO
- SG_ SENSOR_SONARS_rear m0 : 44|12@1+ (0.1,0) [0|0] "" DRIVER,IO
+ SG_ SENSOR_SONARS_mux M : 0|4@1+ (1,0) [0|0] "" DRIVER,IO,MOTOR
+ SG_ SENSOR_SONARS_s1_fault : 4|1@1+ (1,0) [0|0] "" DRIVER,IO,MOTOR
+ SG_ SENSOR_SONARS_s2_fault : 5|1@1+ (1,0) [0|0] "" DRIVER,IO,MOTOR
+ SG_ SENSOR_SONARS_s3_fault : 6|1@1+ (1,0) [0|0] "" DRIVER,IO,MOTOR
+ SG_ SENSOR_SONARS_s4_fault : 7|1@1+ (1,0) [0|0] "" DRIVER,IO,MOTOR
+ SG_ SENSOR_SONARS_left m0 : 8|12@1+ (0.1,0) [0|400] "" DRIVER,IO,MOTOR
+ SG_ SENSOR_SONARS_middle m0 : 20|12@1+ (0.1,0) [0|0] "" DRIVER,IO,MOTOR
+ SG_ SENSOR_SONARS_right m0 : 32|12@1+ (0.1,0) [0|0] "" DRIVER,IO,MOTOR
+ SG_ SENSOR_SONARS_rear m0 : 44|12@1+ (0.1,0) [0|0] "" DRIVER,IO,MOTOR
  SG_ SENSOR_SONARS_no_filt_left m1 : 8|12@1+ (0.1,0) [0|400] "" NOONE
  SG_ SENSOR_SONARS_no_filt_middle m1 : 20|12@1+ (0.1,0) [0|400] "" NOONE
  SG_ SENSOR_SONARS_no_filt_right m1 : 32|12@1+ (0.1,0) [0|400] "" NOONE
  SG_ SENSOR_SONARS_no_filt_rear m1 : 44|12@1+ (0.1,0) [0|400] "" NOONE
 
 
-
-
-
 BO_ 0X020 MOTOR_CMD: 1 DRIVER
- SG_ MOTOR_CMD_steer : 0|4@1+ (1,0) [0|0] "" MOTOR
- SG_ MOTOR_CMD_drive : 4|4@1+ (1,0) [0|0] "" MOTOR
+ SG_ MOTOR_CMD_steer : 0|4@1- (1,-5) [-5|5] "" MOTOR
+ SG_ MOTOR_CMD_drive : 4|4@1+ (1,0) [0|9] "" MOTOR
 
 CM_ BU_ NOONE "No node, used to indicate if it's a debug message going to no one";
 CM_ BU_ DRIVER "The DRIVER controller driving the car";

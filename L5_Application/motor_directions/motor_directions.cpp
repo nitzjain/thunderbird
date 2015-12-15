@@ -22,9 +22,9 @@ direction_t fardirection_computation(int sensor_left,int sensor_straight,int sen
 {
     if(sensor_left<FAR_SENSOR_THRESHOLD&&sensor_right<FAR_SENSOR_THRESHOLD)
         return straight;
-    else if(sensor_left<FAR_SENSOR_THRESHOLD&&sensor_straight<FAR_SENSOR_THRESHOLD)
+    else if(sensor_left<FAR_SENSOR_THRESHOLD&&sensor_straight<FAR_SENSOR_THRESHOLD&&sensor_right>FAR_SENSOR_THRESHOLD)
         return slight_right;
-    else if(sensor_left<FAR_SENSOR_THRESHOLD&&sensor_right<FAR_SENSOR_THRESHOLD)
+    else if(sensor_right<FAR_SENSOR_THRESHOLD&&sensor_straight<FAR_SENSOR_THRESHOLD&&sensor_left>FAR_SENSOR_THRESHOLD)
         return slight_left;
 
     return neardirection;

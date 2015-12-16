@@ -5,7 +5,7 @@
 /* Declare the variables to print on the screen below*/
 
 extern float sleft, smiddle, sright, srear, pwm_mod, gps_start, gps_end; //Values from the sensors
-extern uint16_t degrees;
+extern uint8_t degrees;
 char pwm[100], buf1[100], buf2[100], buf3[100], buf4[100], buf5[100],
         compass[100], start_gps[100], end_gps[100]; //buffers to write information to print on LCD
 
@@ -37,7 +37,7 @@ void LCD_Display()
     urt.putline(pwm);
 
     /* LINE 3 - Coordinates*/
-    sprintf(compass, "%3d", degrees);
+    sprintf(compass, "%d", degrees);
     sprintf(start_gps, "%3d", (int) gps_start);
     sprintf(end_gps, "%3d", (int) gps_end);
 
@@ -48,7 +48,8 @@ void LCD_Display()
     urt.put(end_gps);
 
     urt.put(" C=");
-    urt.putline(compass);
+    urt.put(compass);
+    urt.put("\n");
 
     /* LINE 4 - SENSORS*/
     sprintf(buf2, "%3d", (int) sleft);

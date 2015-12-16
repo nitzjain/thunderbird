@@ -58,7 +58,6 @@ typedef enum direction
     slight_right = 7,
 } direction_t;
 
-
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
@@ -68,12 +67,11 @@ can_msg_t control;
 #define up    7.9
 #define up_L  7.6
 #define up_R  7.6
-#define down  5.5
+#define down  6.5
 #define SL    5
 #define S_SL  6.25
 #define SR    8
 #define S_SR  7.5
-
 
 float pwm_mod = 7.9;
 
@@ -92,7 +90,7 @@ float sleft = 0; ///< B19:8  Min: 0 Max: 400   Destination: DRIVER,IO,MOTOR
 float smiddle = 0; ///< B31:20   Destination: DRIVER,IO,MOTOR
 float sright = 0; ///< B43:32   Destination: DRIVER,IO,MOTOR
 float srear = 0; ///< B55:44   Destination: DRIVER,IO,MOTOR
-uint16_t degrees = 0;
+uint8_t degrees = 0;
 float gps_start, gps_end;
 
 /*Motor Initialization*/
@@ -166,16 +164,8 @@ void period_100Hz(void)
             }
         }
 
-        /*Compass Information*/
-        if(control.msg_id == 0x123)
-        {
-            degrees = control.data.words[0];   //0 - 360
-            printf("\nDegrees = %d", degrees);
-            LD.setNumber(8);
-        }
-
         /*GPS Information*/
-        if(control.msg_id == 0x564)
+        if (control.msg_id == 0x564)
         {
             gps_start = 42;
             gps_end = 62;
@@ -184,14 +174,15 @@ void period_100Hz(void)
         if (control.msg_id == DRIVER_TX_MOTOR_CMD_HDR.mid)
         {
             /*Start the feedback*/
-
             if (DRIVER_TX_MOTOR_CMD_decode(&to, from, &hdr))
             {
                 LD.setNumber(to.MOTOR_CMD_steer);
+                degrees = to.MOTOR_CMD_angle;
                 if (straight == to.MOTOR_CMD_steer) //go forward - 000
                 {
                     LE.toggle(1);
-                    maintain_speed();
+                    //maintain_speed();
+
                     steer.setSteerMotor(7);
                 }
                 else if (left == to.MOTOR_CMD_steer) //go left 001, 011
@@ -200,7 +191,7 @@ void period_100Hz(void)
                     //steer.setSteerMotor(SL);
                     //dc_motor_instance.setDriveMotor(pwm_mod);
                     maintain_speed();
-                    precise_steer(10);   //give command value instead of 10
+                    precise_steer_left(to.MOTOR_CMD_angle );//give command value instead of 10
                 }
                 else if(slight_left == to.MOTOR_CMD_steer)
                 {
@@ -213,7 +204,7 @@ void period_100Hz(void)
                     //steer.setSteerMotor(SR);
                     //dc_motor_instance.setDriveMotor(pwm_mod);
                     maintain_speed();
-                    precise_steer(10);   //give command value instead of 10
+                    precise_steer_right(to.MOTOR_CMD_angle );//give command value instead of 10
                 }
                 else if(slight_right == to.MOTOR_CMD_steer)
                 {

@@ -36,6 +36,7 @@
 #include "periodic_callback.h"
 #include "_can_dbc/can_dbc.h"
 #include "storage.hpp"
+#include "utilities.h"
 #include "motor_directions/motor_directions.hpp"
 
 #include "can_periodic/canperiodicext.hpp"
@@ -60,8 +61,9 @@ GPS_TX_GPS_dest_reached_t dest_reached;
 float longitude_act[2];
 float latitude_act[2];
 float heading_act[2];
+float distance;
 
-const can_t mycan = can1;
+extern const can_t mycan = can1;
 can_msg_t msg;
 direction_t dir;
 DRIVER_TX_MOTOR_CMD_t motor_data;
@@ -74,16 +76,6 @@ static int isgpsstarted = 0;
 bool period_init(void)
 {
 
-    memcpy(&longitude_act[0], &longitude.GPS_longitude_cur, sizeof(float));
-    memcpy(&longitude_act[1], &longitude.GPS_longitude_dst, sizeof(float));
-
-    memcpy(&latitude_act[0], &latitude.GPS_latitude_cur, sizeof(float));
-    memcpy(&latitude_act[1], &latitude.GPS_latitude_dst, sizeof(float));
-
-    memcpy(&heading_act[0], &heading.GPS_heading_cur, sizeof(float));
-    memcpy(&heading_act[1], &heading.GPS_heading_dst, sizeof(float));
-
-    printf("\n ");
 
     return true; // Must return true upon success
 }
@@ -99,6 +91,19 @@ bool period_reg_tlm(void)
 
 void period_1Hz(void)
 {
+    memcpy(&longitude_act[0], &longitude.GPS_longitude_cur, sizeof(float));
+    memcpy(&longitude_act[1], &longitude.GPS_longitude_dst, sizeof(float));
+
+    memcpy(&latitude_act[0], &latitude.GPS_latitude_cur, sizeof(float));
+    memcpy(&latitude_act[1], &latitude.GPS_latitude_dst, sizeof(float));
+
+    memcpy(&heading_act[0], &heading.GPS_heading_cur, sizeof(float));
+    memcpy(&heading_act[1], &heading.GPS_heading_dst, sizeof(float));
+    memcpy(&distance, &dest_reached.GPS_dest_reached, sizeof(float));
+    printf("Dist %f, Angle %d Dir %d\n ", distance, (int)compass.COMPASS_angle, (int)compass.COMPASS_direction);
+    LD.setNumber((char)distance);
+    delay_ms(100);
+    LD.setNumber((char)compass.COMPASS_angle);
 
 }
 
@@ -130,7 +135,7 @@ void period_100Hz(void)
 
     motor_data.MOTOR_CMD_steer = dir;
     if (dir == straight)
-        motor_data.MOTOR_CMD_angle = 0;
+        motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
     else
         motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
     // HANDLE MIAs:
@@ -196,7 +201,7 @@ void period_10Hz(void)
                     from = (uint64_t *) &msg.data;
 
                     if (!SENSOR_TX_SONARS_decode(&val, from, &hdr))
-                        printf("\nDecode failed");
+                        printf("\nSensor Decode failed");
                     break;
                 case 0xA1:
                     hdr.mid = msg.msg_id;
@@ -204,7 +209,7 @@ void period_10Hz(void)
                     from = (uint64_t *) &msg.data;
 
                     if (!SENSOR_TX_sensorback_decode(&back_sensor, from, &hdr))
-                        printf("\nDecode failed");
+                        printf("\nSensor back Decode failed");
                     break;
                 case 0xB0:
                     hdr.mid = msg.msg_id;
@@ -247,9 +252,9 @@ void period_10Hz(void)
                     hdr.mid = msg.msg_id;
                     hdr.dlc = msg.frame_fields.data_len;
                     from = (uint64_t *) &msg.data;
-
-                    if (!GPS_TX_GPS_dest_reached_decode(&dest_reached, from, &hdr))
-                        printf("\nDest reached Decode failed");
+                    //printf(" %d %d",hdr.mid,hdr.dlc);
+                    if (!GPS_TX_GPS_dest_reached_decode(&dest_reached, from, &hdr));
+                        //printf("\nDest reached Decode failed");
                     break;
                 default:
                     //printf("Unknown message received, msg id %d\n", (int) msg.msg_id);

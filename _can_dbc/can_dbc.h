@@ -25,7 +25,7 @@ static const msg_hdr_t GPS_TX_COMPASS_HDR =                   { 0xB0, 3 };
 static const msg_hdr_t GPS_TX_GPS_longitude_HDR =             { 0xB1, 8 };
 static const msg_hdr_t GPS_TX_GPS_latitude_HDR =              { 0xB2, 8 };
 static const msg_hdr_t GPS_TX_GPS_heading_HDR =               { 0xB3, 8 };
-static const msg_hdr_t GPS_TX_GPS_dest_reached_HDR =          { 0xB4, 1 };
+static const msg_hdr_t GPS_TX_GPS_dest_reached_HDR =          { 0xB4, 4 };
 static const msg_hdr_t SENSOR_TX_SONARS_HDR =                 {  200, 6 };
 static const msg_hdr_t DRIVER_TX_MOTOR_CMD_HDR =              { 0X020, 2 };
 
@@ -82,9 +82,9 @@ typedef struct {
 } GPS_TX_GPS_heading_t;
 
 
-/// Message: GPS_dest_reached from 'GPS', DLC: 1 byte(s), MID: 0xB4
+/// Message: GPS_dest_reached from 'GPS', DLC: 4 byte(s), MID: 0xB4
 typedef struct {
-    uint8_t GPS_dest_reached;                 ///< B7:0   Destination: DRIVER,GPS,MOTOR
+    uint32_t GPS_dest_reached;                ///< B31:0   Destination: DRIVER,GPS,MOTOR
 
     mia_info_t mia_info;
 } GPS_TX_GPS_dest_reached_t;
@@ -355,6 +355,9 @@ static inline bool GPS_TX_GPS_dest_reached_decode(GPS_TX_GPS_dest_reached_t *to,
 
     raw_signal = 0;
     raw_signal |= ((uint64_t)((bytes[0] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B0
+    raw_signal |= ((uint64_t)((bytes[1] >> 0) & 0xff)) << 8; ///< 8 bit(s) from B8
+    raw_signal |= ((uint64_t)((bytes[2] >> 0) & 0xff)) << 16; ///< 8 bit(s) from B16
+    raw_signal |= ((uint64_t)((bytes[3] >> 0) & 0xff)) << 24; ///< 8 bit(s) from B24
     to->GPS_dest_reached = (raw_signal * 1.0) + (0);
 
     to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter
@@ -591,8 +594,7 @@ static inline bool GPS_TX_GPS_dest_reached_handle_mia(GPS_TX_GPS_dest_reached_t 
 static inline bool SENSOR_TX_SONARS_handle_mia(SENSOR_TX_SONARS_t *msg, uint32_t time_incr_ms)
 {
     bool mia_occurred = false;
-    #if 0
-
+#if 0
     const mia_info_t old_mia = msg->mia_info;
     msg->mia_info.is_mia = (msg->mia_info.mia_counter_ms >= SONARS__MIA_MS);
 
@@ -607,6 +609,7 @@ static inline bool SENSOR_TX_SONARS_handle_mia(SENSOR_TX_SONARS_t *msg, uint32_t
         mia_occurred = true;
     }
 #endif
+
     return mia_occurred;
 }
 #endif

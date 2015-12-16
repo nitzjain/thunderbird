@@ -1,4 +1,4 @@
-#include "_can_dbc\auto_gen.inc"
+#include <_can_dbc/auto_gen.h>
 #include <stdint.h>
 #include "stdio.h"
 #include "io.hpp"
@@ -52,6 +52,22 @@ float GetBearing(gps_data_t data_gps, gps_data_t chkp_data ){
     }
     return bearing;
 }
+float dist_to_destination(gps_data_t data_gps, gps_data chkp_data){
+    float lat1 = data_gps.Latitude;
+    float lng1 = data_gps.Longitude;
+    float lat2 = chkp_data.Latitude;
+    float lng2 = chkp_data.Longitude;
+
+    float E_RADIUS = 6371;
+    float delta_lat = ToRadian(lat2-lat1);
+    float delta_lng = ToRadian(lng2-lng1);
+
+    float a = sin(delta_lat/2)*sin(delta_lat/2) +
+                cos(ToRadian(lat1))*cos(ToRadian(lat2)) * sin(delta_lng/2) * sin(delta_lng/2);
+    float c = 2 * atan2(sqrt(a),sqrt(1-a));
+    float dist = (double) (E_RADIUS * c);
+    return dist*1000*0.3048;
+}
 int calculate_sector(float heading){
     int sector;
 
@@ -99,7 +115,7 @@ int calculate_sector(float heading){
         sector = 0;
     else{
         sector = -1;
-        printf("ERROR: Invalid sector, heading:%f\n",heading);
+       // printf("ERROR: Invalid sector, heading:%f\n",heading);
     }//printf("sector# = %d",sector);
     return sector;
 }

@@ -27,7 +27,7 @@
  * For example, the 1000Hz take slot runs periodically every 1ms, and whatever you
  * do must be completed within 1ms.  Running over the time slot will reset the system.
  */
-#include "_can_dbc\auto_gen.inc"
+#include <_can_dbc/auto_gen.h>
 #include <stdint.h>
 #include "stdio.h"
 #include "io.hpp"
@@ -37,9 +37,13 @@
 #include <stdint.h>
 #include "compass.hpp"
 #include "can.h"
+#include "string.h"
 
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+
+extern gps_data_t gps_values;
+extern compass_data_t compass_values;
 
 
 float ToRadian(float degree);
@@ -48,76 +52,108 @@ float GetBearing(gps_data_t data_gps, gps_data_t chkp_data);
 int calculate_sector(float angle);
 void GetDirection(direction_t *move_to_dir,int bearing_sector,int heading_sector);
 float get_bearing_new(float lat1,float lat2, float lng1, float lng2);
+float dist_to_destination(gps_data_t data_gps, gps_data chkp_data);
 void period_1Hz(void)
 {
-
-    LE.toggle(1);
 }
 
 void period_10Hz(void)
 {
-    gps_data_t data_gps;
     gps_data_t chkp_data;
     direction_t move_to_dir;
-#if 1
-    static QueueHandle_t gps_data_q = scheduler_task::getSharedObject("gps_queue");
-    if (NULL == gps_data_q) {
-        printf("data-load error");
-    }
-    else if (xQueueReceive(gps_data_q, &data_gps, 0))
-    {
-        printf(" %f, %f :",data_gps.Longitude, data_gps.Latitude);
-    }
-#endif
-    compass_data_t data_compass;
-#if 0
-    static QueueHandle_t compass_data_q = scheduler_task::getSharedObject("compass_queue");
+    float distance;
+
+   printf(" %f, %f :",gps_values.Longitude, gps_values.Latitude);
+   printf("yaw: %f",compass_values.yaw);
 
 
-    if (NULL == compass_data_q) {
-        printf("data-load error");
-    }
-    else if (xQueueReceive(compass_data_q, &data_compass, 0))
-    {
-        printf("yaw: %f",data_compass.yaw);
-    }
-    //int sector = calculate_sector(GetBearing(data_gps,chkp_data),data_compass.yaw);
-
-#endif
-    chkp_data.Latitude = 37.336194;
-    chkp_data.Longitude = 121.883162;
+    chkp_data.Latitude = 37.336363;
+    chkp_data.Longitude = 121.881875;
     //data_gps.Latitude = 37.336834;
     //data_gps.Longitude = 121.881977;
-    int bearing_sector = calculate_sector(GetBearing(data_gps,chkp_data));
-    int heading_sector = calculate_sector(3.2);//data_compass.yaw);
-    printf("Data: %d, %d, %f",bearing_sector,heading_sector,GetBearing(data_gps,chkp_data));//get_bearing_new(37.336834,37.336194,121.881977,121.883162));
+    int bearing_sector = calculate_sector(GetBearing(gps_values,chkp_data));
+    int heading_sector = calculate_sector(compass_values.yaw);
+    //printf("Data: %d, %d, %f",bearing_sector,heading_sector,GetBearing(gps_values,chkp_data));//get_bearing_new(37.336834,37.336194,121.881977,121.883162));
 
-    if(bearing_sector == -1 || heading_sector == -1)
-        printf("Error: Sector is wrong, Bearing sector = %d, Heading_sector = %d",bearing_sector,heading_sector);
-    else
+    if(bearing_sector == -1 || heading_sector == -1){
+
+    }
+        //printf("Error: Sector is wrong, Bearing sector = %d, Heading_sector = %d",bearing_sector,heading_sector);
+    else{
     GetDirection(&move_to_dir,bearing_sector,heading_sector);
-    printf("direction is %d,%d",move_to_dir.angle,move_to_dir.dir);
+    distance = dist_to_destination(gps_values,chkp_data);
+    printf("direction is %d,%d, %f",move_to_dir.angle,move_to_dir.dir, distance);
+    }
 
-    /*
-    can_msg_t msg;
-    GPS_TX_COORDINATES_t gps_c;
-        gps_c.GPS_LAT1 = 8;
-        gps_c.GPS_LAT2 = -2;
-        msg_hdr_t h = GPS_TX_COORDINATES_encode((uint64_t*)&msg.data, &gps_c);
-        msg.msg_id = h.mid;
-        msg.frame_fields.data_len = h.dlc;
-        CAN_tx(can1, &msg, 0);
-    */
+    can_msg_t msg1,msg2,msg3,msg4,msg5;
+        GPS_TX_COMPASS_t Compass;
+        GPS_TX_GPS_longitude_t Longitude;
+        GPS_TX_GPS_latitude_t Latitude;
+        GPS_TX_GPS_heading_t Heading;
+        GPS_TX_GPS_dest_reached_t Dest;
+        Compass.COMPASS_angle = move_to_dir.angle;
+        Compass.COMPASS_direction = move_to_dir.dir;
+
+
+        memcpy(&Longitude.GPS_longitude_cur, &gps_values.Longitude, sizeof(float));
+        memcpy(&Longitude.GPS_longitude_dst, &chkp_data.Longitude, sizeof(float));
+        memcpy(&Latitude.GPS_latitude_cur, &gps_values.Latitude, sizeof(float));
+        memcpy(&Latitude.GPS_latitude_dst, &chkp_data.Latitude, sizeof(float));
+        memcpy(&Heading.GPS_heading_cur, &compass_values.yaw, sizeof(float));
+        memcpy(&Heading.GPS_heading_dst, &move_to_dir.angle, sizeof(float));
+        memcpy(&Dest.GPS_dest_reached, &distance, sizeof(float));
+
+        msg_hdr_t h1 = GPS_TX_COMPASS_encode((uint64_t*)&msg1.data, &Compass);
+        msg1.msg_id = h1.mid;
+        msg1.frame_fields.data_len = h1.dlc;
+
+        if(gps_values.Latitude != 0.0)
+        {
+            if(CAN_tx(can1, &msg1, 0)){
+                printf("pass1\n");
+            }
+            else{
+                printf("fail\n");
+            }
+
+
+            msg_hdr_t h2 = GPS_TX_GPS_longitude_encode((uint64_t*)&msg2.data,&Longitude);
+            msg2.msg_id = h2.mid;
+            msg2.frame_fields.data_len = h2.dlc;
+            if(CAN_tx(can1,&msg2,0)){
+                printf("pass2\n");
+            }
+
+
+            msg_hdr_t h3 = GPS_TX_GPS_latitude_encode((uint64_t*)&msg3.data,&Latitude);
+            msg3.msg_id = h3.mid;
+            msg3.frame_fields.data_len = h3.dlc;
+            if(CAN_tx(can1,&msg3,0)){
+                printf("pass3\n");
+            }
+
+            msg_hdr_t h4 = GPS_TX_GPS_heading_encode((uint64_t*)&msg4.data,&Heading);
+            msg4.msg_id = h4.mid;
+            msg4.frame_fields.data_len = h4.dlc;
+            if(CAN_tx(can1,&msg4,0)){
+            printf("pass4\n");
+            }
+            msg_hdr_t h5 = GPS_TX_COMPASS_encode((uint64_t*)&msg5.data, &Compass);
+            msg5.msg_id = h5.mid;
+            msg5.frame_fields.data_len = h5.dlc;
+            if(CAN_tx(can1, &msg5, 0)){
+                printf("pass5\n");
+            }
+            else{
+                printf("fail\n");
+            }
+        }
 }
 void period_100Hz(void)
-{
-    LE.toggle(3);
-}
+{}
 
 void period_1000Hz(void)
-{
-    LE.toggle(4);
-}
+{}
 /*
  *     SocialLedge.com - Copyright (C) 2013
  *

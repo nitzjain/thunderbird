@@ -101,9 +101,9 @@ void period_1Hz(void)
     memcpy(&heading_act[1], &heading.GPS_heading_dst, sizeof(float));
     memcpy(&distance, &dest_reached.GPS_dest_reached, sizeof(float));
     printf("Dist %f, Angle %d Dir %d\n ", distance, (int)compass.COMPASS_angle, (int)compass.COMPASS_direction);
-    LD.setNumber((char)distance);
+    /*LD.setNumber((char)distance);
     delay_ms(100);
-    LD.setNumber((char)compass.COMPASS_angle);
+    LD.setNumber((char)compass.COMPASS_angle);*/
 
 }
 

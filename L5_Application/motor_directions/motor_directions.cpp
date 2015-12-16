@@ -33,7 +33,9 @@ direction_t fardirection_computation(int sensor_left,int sensor_straight,int sen
 
 direction_t gps_direction()
 {
-    if (compass.COMPASS_direction)
+    if (!compass.COMPASS_angle)
+         return straight;
+    else if (compass.COMPASS_direction)
          return right;
     else
          return left;
@@ -45,6 +47,7 @@ direction_t direction_computation(int sensor_left, int sensor_straight, int sens
 
     if (distance < 5.0)
             return stop;
+
     direction_t gps_dir = gps_direction();
 
     if (sensor_left >= SENSOR_THRESHOLD && sensor_straight >= SENSOR_THRESHOLD
@@ -59,13 +62,16 @@ direction_t direction_computation(int sensor_left, int sensor_straight, int sens
                 if (gps_dir == right)
                        return straight;
                 else
-                        return gps_dir;
+                       return gps_dir;
     }
     else if (sensor_left >= SENSOR_THRESHOLD
             && sensor_straight < SENSOR_THRESHOLD
             && sensor_right >= SENSOR_THRESHOLD)
     {
-        return right;
+            if (sensor_left < sensor_right)
+                return right;
+            else
+                return left;
     }
     else if (sensor_left >= SENSOR_THRESHOLD
             && sensor_straight < SENSOR_THRESHOLD

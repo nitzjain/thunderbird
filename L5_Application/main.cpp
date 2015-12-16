@@ -31,6 +31,8 @@
 #include "motor_directions/motor_input.hpp"
 #include "_can_dbc/can_dbc.h"
 
+
+
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -60,6 +62,7 @@ const SENSOR_TX_SONARS_t                                  SONARS__MIA_MSG = {0 }
 const uint32_t                                         MOTOR_CMD__MIA_MS = 0;
 const DRIVER_TX_MOTOR_CMD_t                            MOTOR_CMD__MIA_MSG = {0};
 
+const can_t mycan = can1;
 
 int main(void)
 {
@@ -79,6 +82,19 @@ int main(void)
 
     //scheduler_add_task(new update_sensor_values(PRIORITY_HIGH));
     //scheduler_add_task(new motor_input(PRIORITY_HIGH));
+
+
+    //Storage::append("log_messages","--Log message file Master Controller--", 40, 0);
+
+
+    if(!CAN_init(mycan, 250, 1024, 1024, NULL,NULL))
+        return false;
+
+    CAN_reset_bus(mycan);
+    CAN_bypass_filter_accept_all_msgs();
+
+
+
 
     #if 0
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */

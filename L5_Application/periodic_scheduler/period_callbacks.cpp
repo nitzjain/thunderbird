@@ -50,6 +50,17 @@ static int firstturnedon =0;
 uint8_t speed_counter = 0;
 SENSOR_TX_SONARS_t val;
 SENSOR_TX_sensorback_t back_sensor;
+/*****GPS data*****/
+GPS_TX_COMPASS_t compass;
+GPS_TX_GPS_longitude_t longitude;
+GPS_TX_GPS_latitude_t latitude;
+GPS_TX_GPS_heading_t heading;
+GPS_TX_GPS_dest_reached_t dest_reached;
+
+float longitude_act[2];
+float latitude_act[2];
+float heading_act[2];
+
 const can_t mycan = can1;
 can_msg_t msg;
 direction_t dir;
@@ -57,10 +68,22 @@ DRIVER_TX_MOTOR_CMD_t motor_data;
 msg_hdr_t hdr;
 uint64_t *from;
 
+static int isgpsstarted = 0;
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
 
+    memcpy(&longitude_act[0], &longitude.GPS_longitude_cur, sizeof(float));
+    memcpy(&longitude_act[1], &longitude.GPS_longitude_dst, sizeof(float));
+
+    memcpy(&latitude_act[0], &latitude.GPS_latitude_cur, sizeof(float));
+    memcpy(&latitude_act[1], &latitude.GPS_latitude_dst, sizeof(float));
+
+    memcpy(&heading_act[0], &heading.GPS_heading_cur, sizeof(float));
+    memcpy(&heading_act[1], &heading.GPS_heading_dst, sizeof(float));
+
+    printf("\n ");
 
     return true; // Must return true upon success
 }
@@ -106,7 +129,10 @@ void period_100Hz(void)
         motor_data.MOTOR_CMD_drive = 1;
 
     motor_data.MOTOR_CMD_steer = dir;
-
+    if (dir == straight)
+        motor_data.MOTOR_CMD_angle = 0;
+    else
+        motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
     // HANDLE MIAs:
     if (SENSOR_TX_SONARS_handle_mia(&val, 10))
     {
@@ -118,11 +144,11 @@ void period_100Hz(void)
     hdr = DRIVER_TX_MOTOR_CMD_encode((uint64_t *) &msg.data, &motor_data);
     msg.msg_id = hdr.mid;
     msg.frame_fields.data_len = hdr.dlc;
-    if (turnedon == 1)
+    if (turnedon == 1 && isgpsstarted == 1)
     {
     if (CAN_tx(mycan, &msg, 0))
     {
-        printf("Message sent  %d\n", msg.data.bytes[0]);
+        //printf("Message sent  %d\n", msg.data.bytes[0]);
     }
     else
     {
@@ -134,10 +160,6 @@ void period_100Hz(void)
 
 void period_10Hz(void)
 {
-
-
-
-
 
     if (SW.getSwitch(1))
     {
@@ -184,9 +206,54 @@ void period_10Hz(void)
                     if (!SENSOR_TX_sensorback_decode(&back_sensor, from, &hdr))
                         printf("\nDecode failed");
                     break;
+                case 0xB0:
+                    hdr.mid = msg.msg_id;
+                    hdr.dlc = msg.frame_fields.data_len;
+                    from = (uint64_t *) &msg.data;
 
+                    isgpsstarted = 1;
+
+                    if (!GPS_TX_COMPASS_decode(&compass, from, &hdr))
+                        printf("\nCompass Decode failed");
+                        //printf("d %d a %d", compass.COMPASS_direction, compass.COMPASS_angle);
+                        //LD.setNumber((char)compass.COMPASS_angle);
+                    break;
+                case 0xB1:
+                    hdr.mid = msg.msg_id;
+                    hdr.dlc = msg.frame_fields.data_len;
+                    from = (uint64_t *) &msg.data;
+
+                    if (!GPS_TX_GPS_longitude_decode(&longitude, from, &hdr));
+                        //printf(" %d %d", hdr.dlc, hdr.mid);
+                    break;
+
+                case 0xB2:
+                    hdr.mid = msg.msg_id;
+                    hdr.dlc = msg.frame_fields.data_len;
+                    from = (uint64_t *) &msg.data;
+
+                    if (!GPS_TX_GPS_latitude_decode(&latitude, from, &hdr))
+                        printf("\nLatitude Decode failed");
+                    break;
+                case 0xB3:
+                    hdr.mid = msg.msg_id;
+                    hdr.dlc = msg.frame_fields.data_len;
+                    from = (uint64_t *) &msg.data;
+
+                    if (!GPS_TX_GPS_heading_decode(&heading, from, &hdr))
+                        printf("\nHeading Decode failed");
+                    break;
+                case 0xB4:
+                    hdr.mid = msg.msg_id;
+                    hdr.dlc = msg.frame_fields.data_len;
+                    from = (uint64_t *) &msg.data;
+
+                    if (!GPS_TX_GPS_dest_reached_decode(&dest_reached, from, &hdr))
+                        printf("\nDest reached Decode failed");
+                    break;
                 default:
                     //printf("Unknown message received, msg id %d\n", (int) msg.msg_id);
+                    printf("U");
                     break;
             } // Switch
         } // while*/

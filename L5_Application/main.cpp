@@ -56,7 +56,10 @@
 #include "can.h"
 #include "lpc_pwm.hpp"
 #include "switches.hpp"
-
+#include "can.h"
+#include "Motor_Speed_Precise_Directions/precise_steer.hpp"
+#include "Motor_Speed_Precise_Directions/motor_speed.hpp"
+#include "../LCD/LCD_20.hpp"
 
 /**
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -72,7 +75,6 @@
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 
-
 int white_count = 0;
 
 void count_interrupts()
@@ -80,14 +82,59 @@ void count_interrupts()
     white_count++;
 }
 
+void button_steer()
+{
+    PWM pwm1(PWM::pwm1, 50);
+    PWM pwm2(PWM::pwm2, 50);
+    LCD_Display();
+    static int start = 0;
+
+    while (start == 0)
+    {
+        pwm1.set(7.5);
+        pwm2.set(7);
+        start++;
+    }
+
+    if (SW.getSwitch(1))
+    {
+        precise_steer(30);
+    }
+    else if(SW.getSwitch(2))
+    {
+        precise_steer(60);
+    }
+    else if (SW.getSwitch(3))
+    {
+        pwm1.set(7.9);
+    }
+    else if(SW.getSwitch(4))
+    {
+        pwm1.set(7.5);
+        pwm2.set(7);
+    }
+    delay_ms(200);
+}
+
 int main(void)
 {
+    PWM pwm1(PWM::pwm1, 50);
+    PWM pwm2(PWM::pwm2, 50);
+
+    //eint3_enable_port2(7, eint_rising_edge, count_interrupts);
+    /*BUtton STEER*/
+    while (1)
+    {
+        button_steer();
+    }
+
+    /*NEVER EXIT*/
     CAN_init(can1, 100, 1024, 1024, NULL, NULL); //initialize can bus 1
     CAN_bypass_filter_accept_all_msgs(); //accept all messages
     CAN_reset_bus(can1); //resets the CAN bus*/
 
+    //eint3_enable_port2(7, eint_rising_edge, count_interrupts);
 
-    eint3_enable_port2(7, eint_rising_edge, count_interrupts);
     scheduler_add_task(new periodicSchedulerTask());
     scheduler_start();
     return -1;

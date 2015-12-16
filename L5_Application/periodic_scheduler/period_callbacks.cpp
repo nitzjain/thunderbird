@@ -47,7 +47,7 @@ void reset_can_bus();
 
 static int turnedon = 0;
 static int firstturnedon =0;
-uint8_t speed_counter = 0;
+//uint8_t speed_counter = 0;
 SENSOR_TX_SONARS_t val;
 const can_t mycan = can1;
 can_msg_t msg;
@@ -109,10 +109,10 @@ void period_100Hz(void)
                                dir);
     }
     LD.setNumber(dir);
-    if (speed_counter > 50)
-        motor_data.MOTOR_CMD_drive = 2;
-    else
-        motor_data.MOTOR_CMD_drive = 1;
+    //if (speed_counter > 50)
+     //   motor_data.MOTOR_CMD_drive = 2;
+    //else
+    motor_data.MOTOR_CMD_drive = 1;
 
     motor_data.MOTOR_CMD_steer = dir;
 

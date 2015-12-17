@@ -130,9 +130,6 @@ void period_100Hz(void)
     }
     **/
     LD.setNumber(dir);
-    //if (speed_counter > 50)
-     //   motor_data.MOTOR_CMD_drive = 2;
-    //else
     motor_data.MOTOR_CMD_drive = 1;
 
     motor_data.MOTOR_CMD_steer = dir;
@@ -140,6 +137,14 @@ void period_100Hz(void)
         motor_data.MOTOR_CMD_angle = compass.COMPASS_angle; // set the angle
     else
         motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
+    /*if (speed_counter > 50)
+        motor_data.MOTOR_CMD_drive = 2;
+    else
+        motor_data.MOTOR_CMD_drive = 1;*/
+
+    motor_data.MOTOR_CMD_steer = dir;
+    motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
+
     // HANDLE MIAs:
     if (SENSOR_TX_SONARS_handle_mia(&val, 10))
     {
@@ -197,7 +202,6 @@ void period_10Hz(void)
             {
 
                 case 200: //TODO: Change to enums
-
                     hdr.mid = msg.msg_id;
                     hdr.dlc = msg.frame_fields.data_len;
                     from = (uint64_t *) &msg.data;

@@ -130,16 +130,7 @@ void period_100Hz(void)
     }
     **/
     LD.setNumber(dir);
-    motor_data.MOTOR_CMD_drive = 1;
-    motor_data.MOTOR_CMD_steer = dir;
-    if (dir == straight)
-        motor_data.MOTOR_CMD_angle = compass.COMPASS_angle; // set the angle
-    else
-        motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
-    /*if (speed_counter > 50)
-        motor_data.MOTOR_CMD_drive = 2;
-    else
-        motor_data.MOTOR_CMD_drive = 1;*/
+    motor_data.MOTOR_CMD_drive = 1;lIFEISFUN1@3$
 
     motor_data.MOTOR_CMD_steer = dir;
     motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;

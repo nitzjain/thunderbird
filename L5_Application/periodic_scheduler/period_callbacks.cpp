@@ -70,8 +70,8 @@ void period_10Hz(void)
     direction_t move_to_dir;
     float distance = 0;
 
-    chkp_data.Latitude = 37.3352778;
-    chkp_data.Longitude = 121.881388;
+    chkp_data.Latitude = 37.335399; ///37.3352778;
+    chkp_data.Longitude =121.881348;//121.881388;
     //data_gps.Latitude = 37.336834;
     //data_gps.Longitude = 121.881977;
     int bearing_sector = calculate_sector(GetBearing(gps_values,chkp_data));

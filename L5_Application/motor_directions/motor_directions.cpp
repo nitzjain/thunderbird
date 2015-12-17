@@ -12,15 +12,16 @@ extern float distance;
 /**
  * Gives the direction based on sensor values.
  */
+/**
 bool isnearobstacle(int sensor_left,int sensor_straight,int sensor_right)
 {
     if(sensor_left<SENSOR_THRESHOLD||sensor_straight<SENSOR_THRESHOLD||sensor_right<SENSOR_THRESHOLD)
      return true;
 }
 
-direction_t fardirection_computation(int sensor_left,int sensor_straight,int sensor_right,int sensor_reverse,direction_t neardirection)
+ direction_t fardirection_computation(int sensor_left,int sensor_straight,int sensor_right,int sensor_reverse,direction_t neardirection)
 {
-    if(sensor_left<FAR_SENSOR_THRESHOLD&&sensor_right<FAR_SENSOR_THRESHOLD)
+    if(sensor_left<FAR_SENSOR_THRESHOLD&&sensor_straight<FAR_SENSOR_THRESHOLD&&sensor_right<FAR_SENSOR_THRESHOLD)
         return straight;
     else if(sensor_left<FAR_SENSOR_THRESHOLD&&sensor_straight<FAR_SENSOR_THRESHOLD&&sensor_right>FAR_SENSOR_THRESHOLD)
         return slight_right;
@@ -29,7 +30,7 @@ direction_t fardirection_computation(int sensor_left,int sensor_straight,int sen
 
     return neardirection;
 
-}
+}**/
 
 direction_t gps_direction()
 {

@@ -116,7 +116,8 @@ void period_100Hz(void)
                                val.m0.SENSOR_SONARS_middle,
                                val.m0.SENSOR_SONARS_right,
                                val.m0.SENSOR_SONARS_rear);
-    bool b = isnearobstacle(val.m0.SENSOR_SONARS_left,
+    /**
+     * bool b = isnearobstacle(val.m0.SENSOR_SONARS_left,
                                val.m0.SENSOR_SONARS_middle,
                                val.m0.SENSOR_SONARS_right);
     if(!b)
@@ -127,6 +128,7 @@ void period_100Hz(void)
                                val.m0.SENSOR_SONARS_rear,
                                dir);
     }
+    **/
     LD.setNumber(dir);
     //if (speed_counter > 50)
      //   motor_data.MOTOR_CMD_drive = 2;
@@ -135,7 +137,7 @@ void period_100Hz(void)
 
     motor_data.MOTOR_CMD_steer = dir;
     if (dir == straight)
-        motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
+        motor_data.MOTOR_CMD_angle = compass.COMPASS_angle; // set the angle
     else
         motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
     // HANDLE MIAs:

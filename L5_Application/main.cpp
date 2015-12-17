@@ -112,50 +112,12 @@ class CanBus : public scheduler_task
 
 void CAN_INIT()
 {
-    CAN_init(can1, 100, 100, 100, 0, 0);
+    CAN_init(can1, 250, 100, 100, 0, 0);
     CAN_reset_bus(can1);
     CAN_bypass_filter_accept_all_msgs();
     memset(&msg1, 0, sizeof(msg1));
-    //msg1.msg_id = 0x001;
-    //msg1.frame_fields.data_len = 3;
-    //msg1.data.bytes[0] = Sen_val[0];
-   // msg1.data.bytes[1] = Sen_val[1];
-    //msg1.data.bytes[2] = Sen_val[2];
-    //printf("CAN initialized");
 }
 
-//class Sensor: public scheduler_task
-//{
-//    public:
-//        Sensor(uint8_t priority) :
-//                scheduler_task("Sensor_Task", 4096, priority)
-//        {
-//            CAN_init(can1, 100, 100, 100, 0, 0);
-//            CAN_reset_bus(can1);
-//            CAN_bypass_filter_accept_all_msgs();
-//            memset(&msg1, 0, sizeof(msg1));
-//            msg1.msg_id = 0x001;
-//            msg1.frame_fields.data_len = 1;
-//            msg1.data.bytes[0] = Sen_val[0];
-//            // msg1.data.bytes[1] = Sen_val[1];
-//            //  msg1.data.bytes[2] = Sen_val[2];
-//        }
-//
-//        bool run(void *p)
-//        {
-//
-//          //  Sen_val[0] = GetLeftSensorReading();
-//            //           Sen_val[1]=GetMidSensorReading();
-////            Sen_val[2]=GetRightSensorReading();
-//
-//            //printf("Reading LEFT is: %i\n", Sen_val[0]);
-////            printf("Reading MID is: %i\n",Sen_val[1]);
-////            printf("Reading RIGHT is: %i\n",Sen_val[2]);
-//           // CAN_tx(can1, &msg1, portMAX_DELAY);
-//            delay_ms(1000);
-//            return true;
-//        }
-//};
 
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp

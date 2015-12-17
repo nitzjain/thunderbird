@@ -90,6 +90,7 @@ bool period_reg_tlm(void)
 
 void period_1Hz(void)
 {
+    LD.setNumber(currentstate);
 // printf("currentstate %d",currentstate);
 }
 
@@ -109,6 +110,8 @@ void period_100Hz(void)
             issensorvaluepresent = -1;
         }
 
+    //printf("state : %d",currentstate);
+  //  LD.setNumber(currentstate);
 }
 
 void period_1000Hz(void)
@@ -119,6 +122,7 @@ void period_1000Hz(void)
             STARTLEFT();
             currentstate = left;
             leftfall = -1;
+
             break;
         case left:
             if(leftfall == 1){

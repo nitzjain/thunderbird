@@ -46,7 +46,7 @@ direction_t gps_direction()
 direction_t direction_computation(int sensor_left, int sensor_straight, int sensor_right, int sensor_reverse)
 {
 
-    if (distance < 5.0)
+    if (distance < 1.0)
             return stop;
 
     direction_t gps_dir = gps_direction();

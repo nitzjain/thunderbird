@@ -1,4 +1,4 @@
-/// DBC file: 243.dbc    Self node: DRIVER
+/// DBC file: _can_dbc/243.dbc    Self node: DRIVER
 /// This file should be included by a source file, for example: #include "generated.c"
 #ifndef __GENEARTED_DBC_PARSER
 #define __GENERATED_DBC_PARSER
@@ -21,13 +21,18 @@ typedef struct {
 
 static const msg_hdr_t DRIVER_TX_HEARTBEAT_HDR =              { 0xA0, 1 };
 static const msg_hdr_t SENSOR_TX_sensorback_HDR =             { 0xA1, 1 };
+static const msg_hdr_t IO_TX_IOSTART_HDR =                    { 0x02, 1 };
+static const msg_hdr_t IO_TX_IOSTOP_HDR =                     { 0x01, 1 };
+static const msg_hdr_t IO_TX_IOCHECKPOINTCOUNT_HDR =          { 0x03, 1 };
+static const msg_hdr_t GPS_TX_GPSCHECKPOINTCOUNT_HDR =        { 0x05, 1 };
+static const msg_hdr_t IO_TX_IOGPSCHECKPOINT_HDR =            { 0x04, 8 };
 static const msg_hdr_t GPS_TX_COMPASS_HDR =                   { 0xB0, 3 };
 static const msg_hdr_t GPS_TX_GPS_longitude_HDR =             { 0xB1, 8 };
 static const msg_hdr_t GPS_TX_GPS_latitude_HDR =              { 0xB2, 8 };
 static const msg_hdr_t GPS_TX_GPS_heading_HDR =               { 0xB3, 8 };
 static const msg_hdr_t GPS_TX_GPS_dest_reached_HDR =          { 0xB4, 4 };
 static const msg_hdr_t SENSOR_TX_SONARS_HDR =                 {  200, 6 };
-static const msg_hdr_t DRIVER_TX_MOTOR_CMD_HDR =              { 0X020, 2 };
+static const msg_hdr_t DRIVER_TX_MOTOR_CMD_HDR =              { 0X020, 3 };
 
 
 /// Message: HEARTBEAT from 'DRIVER', DLC: 1 byte(s), MID: 0xA0
@@ -44,6 +49,47 @@ typedef struct {
 
     mia_info_t mia_info;
 } SENSOR_TX_sensorback_t;
+
+
+/// Message: IOSTART from 'IO', DLC: 1 byte(s), MID: 0x02
+typedef struct {
+    uint8_t IOSTART_cmd;                      ///< B7:0   Destination: DRIVER
+
+    mia_info_t mia_info;
+} IO_TX_IOSTART_t;
+
+
+/// Message: IOSTOP from 'IO', DLC: 1 byte(s), MID: 0x01
+typedef struct {
+    uint8_t IOSTOP_cmd;                       ///< B7:0   Destination: DRIVER
+
+    mia_info_t mia_info;
+} IO_TX_IOSTOP_t;
+
+
+/// Message: IOCHECKPOINTCOUNT from 'IO', DLC: 1 byte(s), MID: 0x03
+typedef struct {
+    uint8_t IOCOUNT_cmd;                      ///< B7:0   Destination: GPS,DRIVER
+
+    mia_info_t mia_info;
+} IO_TX_IOCHECKPOINTCOUNT_t;
+
+
+/// Message: GPSCHECKPOINTCOUNT from 'GPS', DLC: 1 byte(s), MID: 0x05
+typedef struct {
+    uint8_t GPSCOUNT_cmd;                     ///< B7:0   Destination: IO,DRIVER
+
+    mia_info_t mia_info;
+} GPS_TX_GPSCHECKPOINTCOUNT_t;
+
+
+/// Message: IOGPSCHECKPOINT from 'IO', DLC: 8 byte(s), MID: 0x04
+typedef struct {
+    uint32_t IOLATITUDE;                      ///< B31:0   Destination: DRIVER,GPS
+    uint32_t IOLONGTITUDE;                    ///< B63:32   Destination: DRIVER,GPS
+
+    mia_info_t mia_info;
+} IO_TX_IOGPSCHECKPOINT_t;
 
 
 /// Message: COMPASS from 'GPS', DLC: 3 byte(s), MID: 0xB0
@@ -125,11 +171,11 @@ typedef struct {
 /// @} MUX'd message
 
 
-/// Message: MOTOR_CMD from 'DRIVER', DLC: 2 byte(s), MID: 0X020
+/// Message: MOTOR_CMD from 'DRIVER', DLC: 3 byte(s), MID: 0X020
 typedef struct {
-    int8_t MOTOR_CMD_steer : 4;               ///< B3:0  Min: -5 Max: 5   Destination: MOTOR
-    uint8_t MOTOR_CMD_drive : 4;              ///< B7:4  Min: 0 Max: 9   Destination: MOTOR
-    uint8_t MOTOR_CMD_angle;                  ///< B15:8   Destination: MOTOR
+    int16_t MOTOR_CMD_steer;                  ///< B7:0   Destination: MOTOR
+    uint8_t MOTOR_CMD_drive;                  ///< B15:8   Destination: MOTOR
+    uint8_t MOTOR_CMD_angle;                  ///< B23:16   Destination: MOTOR
 
     mia_info_t mia_info;
 } DRIVER_TX_MOTOR_CMD_t;
@@ -138,6 +184,16 @@ typedef struct {
 /// These 'externs' need to be defined in a source file of your project
 extern const uint32_t                                        sensorback__MIA_MS;
 extern const SENSOR_TX_sensorback_t                          sensorback__MIA_MSG;
+extern const uint32_t                                           IOSTART__MIA_MS;
+extern const IO_TX_IOSTART_t                                    IOSTART__MIA_MSG;
+extern const uint32_t                                            IOSTOP__MIA_MS;
+extern const IO_TX_IOSTOP_t                                      IOSTOP__MIA_MSG;
+extern const uint32_t                                 IOCHECKPOINTCOUNT__MIA_MS;
+extern const IO_TX_IOCHECKPOINTCOUNT_t                IOCHECKPOINTCOUNT__MIA_MSG;
+extern const uint32_t                                GPSCHECKPOINTCOUNT__MIA_MS;
+extern const GPS_TX_GPSCHECKPOINTCOUNT_t             GPSCHECKPOINTCOUNT__MIA_MSG;
+extern const uint32_t                                   IOGPSCHECKPOINT__MIA_MS;
+extern const IO_TX_IOGPSCHECKPOINT_t                    IOGPSCHECKPOINT__MIA_MSG;
 extern const uint32_t                                           COMPASS__MIA_MS;
 extern const GPS_TX_COMPASS_t                                   COMPASS__MIA_MSG;
 extern const uint32_t                                     GPS_longitude__MIA_MS;
@@ -168,6 +224,16 @@ static msg_hdr_t DRIVER_TX_HEARTBEAT_encode(uint64_t *to, DRIVER_TX_HEARTBEAT_t 
 
 /// Not generating code for SENSOR_TX_sensorback_encode() since the sender is SENSOR and we are DRIVER
 
+/// Not generating code for IO_TX_IOSTART_encode() since the sender is IO and we are DRIVER
+
+/// Not generating code for IO_TX_IOSTOP_encode() since the sender is IO and we are DRIVER
+
+/// Not generating code for IO_TX_IOCHECKPOINTCOUNT_encode() since the sender is IO and we are DRIVER
+
+/// Not generating code for GPS_TX_GPSCHECKPOINTCOUNT_encode() since the sender is GPS and we are DRIVER
+
+/// Not generating code for IO_TX_IOGPSCHECKPOINT_encode() since the sender is IO and we are DRIVER
+
 /// Not generating code for GPS_TX_COMPASS_encode() since the sender is GPS and we are DRIVER
 
 /// Not generating code for GPS_TX_GPS_longitude_encode() since the sender is GPS and we are DRIVER
@@ -188,18 +254,14 @@ static msg_hdr_t DRIVER_TX_MOTOR_CMD_encode(uint64_t *to, DRIVER_TX_MOTOR_CMD_t 
     uint8_t *bytes = (uint8_t*) to;
     uint64_t raw_signal;
 
-    if(from->MOTOR_CMD_steer < -5) { from->MOTOR_CMD_steer = -5; }
-    if(from->MOTOR_CMD_steer > 5) { from->MOTOR_CMD_steer = 5; }
-    raw_signal = ((uint64_t)(((from->MOTOR_CMD_steer - (-5)) / 1.0) + 0.5)) & 0x0f;
-    bytes[0] |= (((uint8_t)(raw_signal >> 0) & 0x0f) << 0); ///< 4 bit(s) to B0
+    raw_signal = ((uint64_t)(((from->MOTOR_CMD_steer - (0)) / 1.0) + 0.5)) & 0xff;
+    bytes[0] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B0
 
-    if(from->MOTOR_CMD_drive < 0) { from->MOTOR_CMD_drive = 0; }
-    if(from->MOTOR_CMD_drive > 9) { from->MOTOR_CMD_drive = 9; }
-    raw_signal = ((uint64_t)(((from->MOTOR_CMD_drive - (0)) / 1.0) + 0.5)) & 0x0f;
-    bytes[0] |= (((uint8_t)(raw_signal >> 0) & 0x0f) << 4); ///< 4 bit(s) to B4
+    raw_signal = ((uint64_t)(((from->MOTOR_CMD_drive - (0)) / 1.0) + 0.5)) & 0xff;
+    bytes[1] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B8
 
     raw_signal = ((uint64_t)(((from->MOTOR_CMD_angle - (0)) / 1.0) + 0.5)) & 0xff;
-    bytes[1] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B8
+    bytes[2] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B16
 
     return DRIVER_TX_MOTOR_CMD_HDR;
 }
@@ -221,6 +283,116 @@ static inline bool SENSOR_TX_sensorback_decode(SENSOR_TX_sensorback_t *to, const
     raw_signal = 0;
     raw_signal |= ((uint64_t)((bytes[0] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B0
     to->SENSOR_BACK_cmd = (raw_signal * 1.0) + (0);
+
+    to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter
+    return success;
+}
+
+
+/// Decode IO's 'IOSTART' message
+/// @param hdr  The header of the message to validate its DLC and MID; this can be NULL to skip this check
+static inline bool IO_TX_IOSTART_decode(IO_TX_IOSTART_t *to, const uint64_t *from, const msg_hdr_t *hdr)
+{
+    const bool success = true;
+    if (NULL != hdr && (hdr->dlc != IO_TX_IOSTART_HDR.dlc || hdr->mid != IO_TX_IOSTART_HDR.mid)) {
+        return !success;
+    }
+    uint64_t raw_signal;
+    const uint8_t *bytes = (const uint8_t*) from;
+
+    raw_signal = 0;
+    raw_signal |= ((uint64_t)((bytes[0] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B0
+    to->IOSTART_cmd = (raw_signal * 1.0) + (0);
+
+    to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter
+    return success;
+}
+
+
+/// Decode IO's 'IOSTOP' message
+/// @param hdr  The header of the message to validate its DLC and MID; this can be NULL to skip this check
+static inline bool IO_TX_IOSTOP_decode(IO_TX_IOSTOP_t *to, const uint64_t *from, const msg_hdr_t *hdr)
+{
+    const bool success = true;
+    if (NULL != hdr && (hdr->dlc != IO_TX_IOSTOP_HDR.dlc || hdr->mid != IO_TX_IOSTOP_HDR.mid)) {
+        return !success;
+    }
+    uint64_t raw_signal;
+    const uint8_t *bytes = (const uint8_t*) from;
+
+    raw_signal = 0;
+    raw_signal |= ((uint64_t)((bytes[0] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B0
+    to->IOSTOP_cmd = (raw_signal * 1.0) + (0);
+
+    to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter
+    return success;
+}
+
+
+/// Decode IO's 'IOCHECKPOINTCOUNT' message
+/// @param hdr  The header of the message to validate its DLC and MID; this can be NULL to skip this check
+static inline bool IO_TX_IOCHECKPOINTCOUNT_decode(IO_TX_IOCHECKPOINTCOUNT_t *to, const uint64_t *from, const msg_hdr_t *hdr)
+{
+    const bool success = true;
+    if (NULL != hdr && (hdr->dlc != IO_TX_IOCHECKPOINTCOUNT_HDR.dlc || hdr->mid != IO_TX_IOCHECKPOINTCOUNT_HDR.mid)) {
+        return !success;
+    }
+    uint64_t raw_signal;
+    const uint8_t *bytes = (const uint8_t*) from;
+
+    raw_signal = 0;
+    raw_signal |= ((uint64_t)((bytes[0] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B0
+    to->IOCOUNT_cmd = (raw_signal * 1.0) + (0);
+
+    to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter
+    return success;
+}
+
+
+/// Decode GPS's 'GPSCHECKPOINTCOUNT' message
+/// @param hdr  The header of the message to validate its DLC and MID; this can be NULL to skip this check
+static inline bool GPS_TX_GPSCHECKPOINTCOUNT_decode(GPS_TX_GPSCHECKPOINTCOUNT_t *to, const uint64_t *from, const msg_hdr_t *hdr)
+{
+    const bool success = true;
+    if (NULL != hdr && (hdr->dlc != GPS_TX_GPSCHECKPOINTCOUNT_HDR.dlc || hdr->mid != GPS_TX_GPSCHECKPOINTCOUNT_HDR.mid)) {
+        return !success;
+    }
+    uint64_t raw_signal;
+    const uint8_t *bytes = (const uint8_t*) from;
+
+    raw_signal = 0;
+    raw_signal |= ((uint64_t)((bytes[0] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B0
+    to->GPSCOUNT_cmd = (raw_signal * 1.0) + (0);
+
+    to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter
+    return success;
+}
+
+
+/// Decode IO's 'IOGPSCHECKPOINT' message
+/// @param hdr  The header of the message to validate its DLC and MID; this can be NULL to skip this check
+static inline bool IO_TX_IOGPSCHECKPOINT_decode(IO_TX_IOGPSCHECKPOINT_t *to, const uint64_t *from, const msg_hdr_t *hdr)
+{
+    const bool success = true;
+    if (NULL != hdr && (hdr->dlc != IO_TX_IOGPSCHECKPOINT_HDR.dlc || hdr->mid != IO_TX_IOGPSCHECKPOINT_HDR.mid)) {
+        return !success;
+    }
+    uint64_t raw_signal;
+    const uint8_t *bytes = (const uint8_t*) from;
+
+    raw_signal = 0;
+    raw_signal |= ((uint64_t)((bytes[0] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B0
+    raw_signal |= ((uint64_t)((bytes[1] >> 0) & 0xff)) << 8; ///< 8 bit(s) from B8
+    raw_signal |= ((uint64_t)((bytes[2] >> 0) & 0xff)) << 16; ///< 8 bit(s) from B16
+    raw_signal |= ((uint64_t)((bytes[3] >> 0) & 0xff)) << 24; ///< 8 bit(s) from B24
+    to->IOLATITUDE = (raw_signal * 1.0) + (0);
+
+    raw_signal = 0;
+    raw_signal |= ((uint64_t)((bytes[4] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B32
+    raw_signal |= ((uint64_t)((bytes[5] >> 0) & 0xff)) << 8; ///< 8 bit(s) from B40
+    raw_signal |= ((uint64_t)((bytes[6] >> 0) & 0xff)) << 16; ///< 8 bit(s) from B48
+    raw_signal |= ((uint64_t)((bytes[7] >> 0) & 0xff)) << 24; ///< 8 bit(s) from B56
+    to->IOLONGTITUDE = (raw_signal * 1.0) + (0);
 
     to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter
     return success;
@@ -467,6 +639,126 @@ static inline bool SENSOR_TX_sensorback_handle_mia(SENSOR_TX_sensorback_t *msg, 
     return mia_occurred;
 }
 
+/// Handle the MIA for IO's 'IOSTART' message
+/// @param   time_incr_ms  The time to increment the MIA counter with
+/// @returns true if the MIA just occurred
+/// @post    If the MIA counter is not reset, and goes beyond the MIA value, the MIA flag is set
+static inline bool IO_TX_IOSTART_handle_mia(IO_TX_IOSTART_t *msg, uint32_t time_incr_ms)
+{
+    bool mia_occurred = false;
+    const mia_info_t old_mia = msg->mia_info;
+    msg->mia_info.is_mia = (msg->mia_info.mia_counter_ms >= IOSTART__MIA_MS);
+
+    if (!msg->mia_info.is_mia) { 
+        msg->mia_info.mia_counter_ms += time_incr_ms;
+    }
+    else if(!old_mia.is_mia)   { 
+        // Copy MIA struct, then re-write the MIA counter and is_mia that is overwriten
+        *msg = IOSTART__MIA_MSG;
+        msg->mia_info.mia_counter_ms = IOSTART__MIA_MS;
+        msg->mia_info.is_mia = true;
+        mia_occurred = true;
+    }
+
+    return mia_occurred;
+}
+
+/// Handle the MIA for IO's 'IOSTOP' message
+/// @param   time_incr_ms  The time to increment the MIA counter with
+/// @returns true if the MIA just occurred
+/// @post    If the MIA counter is not reset, and goes beyond the MIA value, the MIA flag is set
+static inline bool IO_TX_IOSTOP_handle_mia(IO_TX_IOSTOP_t *msg, uint32_t time_incr_ms)
+{
+    bool mia_occurred = false;
+    const mia_info_t old_mia = msg->mia_info;
+    msg->mia_info.is_mia = (msg->mia_info.mia_counter_ms >= IOSTOP__MIA_MS);
+
+    if (!msg->mia_info.is_mia) { 
+        msg->mia_info.mia_counter_ms += time_incr_ms;
+    }
+    else if(!old_mia.is_mia)   { 
+        // Copy MIA struct, then re-write the MIA counter and is_mia that is overwriten
+        *msg = IOSTOP__MIA_MSG;
+        msg->mia_info.mia_counter_ms = IOSTOP__MIA_MS;
+        msg->mia_info.is_mia = true;
+        mia_occurred = true;
+    }
+
+    return mia_occurred;
+}
+
+/// Handle the MIA for IO's 'IOCHECKPOINTCOUNT' message
+/// @param   time_incr_ms  The time to increment the MIA counter with
+/// @returns true if the MIA just occurred
+/// @post    If the MIA counter is not reset, and goes beyond the MIA value, the MIA flag is set
+static inline bool IO_TX_IOCHECKPOINTCOUNT_handle_mia(IO_TX_IOCHECKPOINTCOUNT_t *msg, uint32_t time_incr_ms)
+{
+    bool mia_occurred = false;
+    const mia_info_t old_mia = msg->mia_info;
+    msg->mia_info.is_mia = (msg->mia_info.mia_counter_ms >= IOCHECKPOINTCOUNT__MIA_MS);
+
+    if (!msg->mia_info.is_mia) { 
+        msg->mia_info.mia_counter_ms += time_incr_ms;
+    }
+    else if(!old_mia.is_mia)   { 
+        // Copy MIA struct, then re-write the MIA counter and is_mia that is overwriten
+        *msg = IOCHECKPOINTCOUNT__MIA_MSG;
+        msg->mia_info.mia_counter_ms = IOCHECKPOINTCOUNT__MIA_MS;
+        msg->mia_info.is_mia = true;
+        mia_occurred = true;
+    }
+
+    return mia_occurred;
+}
+
+/// Handle the MIA for GPS's 'GPSCHECKPOINTCOUNT' message
+/// @param   time_incr_ms  The time to increment the MIA counter with
+/// @returns true if the MIA just occurred
+/// @post    If the MIA counter is not reset, and goes beyond the MIA value, the MIA flag is set
+static inline bool GPS_TX_GPSCHECKPOINTCOUNT_handle_mia(GPS_TX_GPSCHECKPOINTCOUNT_t *msg, uint32_t time_incr_ms)
+{
+    bool mia_occurred = false;
+    const mia_info_t old_mia = msg->mia_info;
+    msg->mia_info.is_mia = (msg->mia_info.mia_counter_ms >= GPSCHECKPOINTCOUNT__MIA_MS);
+
+    if (!msg->mia_info.is_mia) { 
+        msg->mia_info.mia_counter_ms += time_incr_ms;
+    }
+    else if(!old_mia.is_mia)   { 
+        // Copy MIA struct, then re-write the MIA counter and is_mia that is overwriten
+        *msg = GPSCHECKPOINTCOUNT__MIA_MSG;
+        msg->mia_info.mia_counter_ms = GPSCHECKPOINTCOUNT__MIA_MS;
+        msg->mia_info.is_mia = true;
+        mia_occurred = true;
+    }
+
+    return mia_occurred;
+}
+
+/// Handle the MIA for IO's 'IOGPSCHECKPOINT' message
+/// @param   time_incr_ms  The time to increment the MIA counter with
+/// @returns true if the MIA just occurred
+/// @post    If the MIA counter is not reset, and goes beyond the MIA value, the MIA flag is set
+static inline bool IO_TX_IOGPSCHECKPOINT_handle_mia(IO_TX_IOGPSCHECKPOINT_t *msg, uint32_t time_incr_ms)
+{
+    bool mia_occurred = false;
+    const mia_info_t old_mia = msg->mia_info;
+    msg->mia_info.is_mia = (msg->mia_info.mia_counter_ms >= IOGPSCHECKPOINT__MIA_MS);
+
+    if (!msg->mia_info.is_mia) { 
+        msg->mia_info.mia_counter_ms += time_incr_ms;
+    }
+    else if(!old_mia.is_mia)   { 
+        // Copy MIA struct, then re-write the MIA counter and is_mia that is overwriten
+        *msg = IOGPSCHECKPOINT__MIA_MSG;
+        msg->mia_info.mia_counter_ms = IOGPSCHECKPOINT__MIA_MS;
+        msg->mia_info.is_mia = true;
+        mia_occurred = true;
+    }
+
+    return mia_occurred;
+}
+
 /// Handle the MIA for GPS's 'COMPASS' message
 /// @param   time_incr_ms  The time to increment the MIA counter with
 /// @returns true if the MIA just occurred
@@ -609,7 +901,6 @@ static inline bool SENSOR_TX_SONARS_handle_mia(SENSOR_TX_SONARS_t *msg, uint32_t
         mia_occurred = true;
     }
 #endif
-
     return mia_occurred;
 }
 #endif

@@ -9,6 +9,7 @@
 
 extern GPS_TX_COMPASS_t compass;
 extern float distance;
+extern GPS_TX_GPS_dest_reached_t dest_reached;
 /**
  * Gives the direction based on sensor values.
  */
@@ -46,7 +47,7 @@ direction_t gps_direction()
 direction_t direction_computation(int sensor_left, int sensor_straight, int sensor_right, int sensor_reverse)
 {
 
-    if (distance < 5.0)
+    if (dest_reached.GPS_dest_reached)
             return stop;
 
     direction_t gps_dir = gps_direction();

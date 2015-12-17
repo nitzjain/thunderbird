@@ -41,6 +41,22 @@ BO_ 0xA0 HEARTBEAT: 1 DRIVER
 BO_ 0xA1 sensorback: 1 SENSOR
  SG_ SENSOR_BACK_cmd : 0|8@1+ (1,0) [0|0] "" DRIVER,MOTOR,GPS,IO
 
+BO_ 0x02 IOSTART: 1 IO
+ SG_ IOSTART_cmd : 0|8@1+ (1,0) [0|0] "" DRIVER
+ 
+BO_ 0x01 IOSTOP: 1 IO
+ SG_ IOSTOP_cmd : 0|8@1+ (1,0) [0|0] "" DRIVER
+
+BO_ 0x03 IOCHECKPOINTCOUNT: 1 IO
+ SG_ IOCOUNT_cmd : 0|8@1+ (1,0) [0|0] "" GPS,DRIVER
+
+BO_ 0x05 GPSCHECKPOINTCOUNT: 1 GPS
+ SG_ GPSCOUNT_cmd : 0|8@1+ (1,0) [0|0] "" IO,DRIVER
+
+BO_ 0x04 IOGPSCHECKPOINT: 8 IO
+ SG_ IOLATITUDE : 0|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS
+ SG_ IOLONGTITUDE : 32|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS
+
 BO_ 0xB0 COMPASS: 3 GPS
  SG_ COMPASS_direction : 0|8@1+ (1,0) [0|0] "DIRECTION" DRIVER,GPS,MOTOR
  SG_ COMPASS_angle : 8|16@1- (1,0) [0|0] "DEGREE" DRIVER,GPS,MOTOR
@@ -78,10 +94,10 @@ BO_ 200 SONARS: 6 SENSOR
  SG_ SENSOR_SONARS_no_filt_rear m1 : 44|12@1+ (0.1,0) [0|400] "" NOONE
 
 
-BO_ 0X020 MOTOR_CMD: 2 DRIVER
- SG_ MOTOR_CMD_steer : 0|4@1- (1,-5) [-5|5] "" MOTOR
- SG_ MOTOR_CMD_drive : 4|4@1+ (1,0) [0|9] "" MOTOR
- SG_ MOTOR_CMD_angle : 8|8@1+ (1,0) [0|0] "" MOTOR
+BO_ 0X020 MOTOR_CMD: 3 DRIVER
+ SG_ MOTOR_CMD_steer : 0|8@1- (1,0) [0|0] "" MOTOR
+ SG_ MOTOR_CMD_drive : 8|8@1+ (1,0) [0|0] "" MOTOR
+ SG_ MOTOR_CMD_angle : 16|8@1+ (1,0) [0|0] "" MOTOR
 
 CM_ BU_ NOONE "No node, used to indicate if it's a debug message going to no one";
 CM_ BU_ DRIVER "The DRIVER controller driving the car";

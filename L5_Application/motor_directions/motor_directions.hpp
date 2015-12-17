@@ -13,7 +13,7 @@
 //#include "can_periodic/canperiodicext.hpp"
 
 //need to update this value based on sensor controller data
-#define SENSOR_THRESHOLD 60
+#define SENSOR_THRESHOLD 100
 #define FAR_SENSOR_THRESHOLD 100
 #define MOVE_STRAIGHT 0
 #define MOVE_RIGHT 1

@@ -33,7 +33,7 @@ NS_ :
 
 BS_:
 
-BU_: NOONE SENSOR DRIVER MOTOR GPS IO
+BU_: NOONE SENSOR DRIVER MOTOR GPS IO BRIDGE
 
 BO_ 0xA0 HEARTBEAT: 1 DRIVER
  SG_ DRIVER_HEARTBEAT_cmd : 0|8@1+ (1,0) [0|0] "" SENSOR,MOTOR,GPS
@@ -57,9 +57,13 @@ BO_ 0xB3 GPS_heading: 8 GPS
  SG_ GPS_heading_cur : 0|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS,MOTOR
  SG_ GPS_heading_dst : 32|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS,MOTOR
 
-BO_ 0xB4 GPS_dest_reached: 1 GPS
- SG_ GPS_dest_reached : 0|8@1+ (1,0) [0|0] "" DRIVER,GPS,MOTOR
+BO_ 0xB4 GPS_dest_reached: 4 GPS
+ SG_ GPS_dest_reached : 0|32@1+ (1,0) [0|0] "" DRIVER,GPS,MOTOR
  
+BO_ 0xC1 Check_points: 8 BRIDGE
+ SG_ GPS_longitude_cur : 0|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS,MOTOR
+ SG_ GPS_longitude_dst : 32|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS,MOTOR
+
 
 
 BO_ 200 SONARS: 6 SENSOR

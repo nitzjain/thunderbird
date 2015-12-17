@@ -42,6 +42,9 @@
 /// This is the stack size used for each of the period tasks
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
+float Check_latitude[50];
+float Check_longitude[50];
+
 extern gps_data_t gps_values;
 extern compass_data_t compass_values;
 
@@ -53,8 +56,12 @@ int calculate_sector(float angle);
 void GetDirection(direction_t *move_to_dir,int bearing_sector,int heading_sector);
 float get_bearing_new(float lat1,float lat2, float lng1, float lng2);
 float dist_to_destination(gps_data_t data_gps, gps_data chkp_data);
+
+/*Get the n check points*/
 void period_1Hz(void)
 {
+
+
 }
 
 void period_10Hz(void)
@@ -67,8 +74,8 @@ void period_10Hz(void)
    printf("yaw: %f",compass_values.yaw);
 
 
-    chkp_data.Latitude = 37.336363;
-    chkp_data.Longitude = 121.881875;
+    chkp_data.Latitude = 37.3352778;
+    chkp_data.Longitude = 121.881388;
     //data_gps.Latitude = 37.336834;
     //data_gps.Longitude = 121.881977;
     int bearing_sector = calculate_sector(GetBearing(gps_values,chkp_data));
@@ -94,7 +101,7 @@ void period_10Hz(void)
         Compass.COMPASS_angle = move_to_dir.angle;
         Compass.COMPASS_direction = move_to_dir.dir;
 
-
+        distance = 100;
         memcpy(&Longitude.GPS_longitude_cur, &gps_values.Longitude, sizeof(float));
         memcpy(&Longitude.GPS_longitude_dst, &chkp_data.Longitude, sizeof(float));
         memcpy(&Latitude.GPS_latitude_cur, &gps_values.Latitude, sizeof(float));
@@ -107,7 +114,8 @@ void period_10Hz(void)
         msg1.msg_id = h1.mid;
         msg1.frame_fields.data_len = h1.dlc;
 
-        if(gps_values.Latitude != 0.0)
+        //if(gps_values.Latitude != 0.0)
+        if(1)
         {
             if(CAN_tx(can1, &msg1, 0)){
                 printf("pass1\n");
@@ -138,7 +146,7 @@ void period_10Hz(void)
             if(CAN_tx(can1,&msg4,0)){
             printf("pass4\n");
             }
-            msg_hdr_t h5 = GPS_TX_COMPASS_encode((uint64_t*)&msg5.data, &Compass);
+            msg_hdr_t h5 = GPS_TX_GPS_dest_reached_encode((uint64_t*)&msg5.data, &Dest);
             msg5.msg_id = h5.mid;
             msg5.frame_fields.data_len = h5.dlc;
             if(CAN_tx(can1, &msg5, 0)){

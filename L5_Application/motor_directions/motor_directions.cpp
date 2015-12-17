@@ -68,15 +68,19 @@ direction_t direction_computation(int sensor_left, int sensor_straight, int sens
             && sensor_straight < SENSOR_THRESHOLD
             && sensor_right >= SENSOR_THRESHOLD)
     {
+
+            compass.COMPASS_angle = 80;
             if (sensor_left < sensor_right)
                 return right;
             else
                 return left;
+
     }
     else if (sensor_left >= SENSOR_THRESHOLD
             && sensor_straight < SENSOR_THRESHOLD
             && sensor_right < SENSOR_THRESHOLD)
     {
+        compass.COMPASS_angle = 80;
         return left;
     }
     else if (sensor_left < SENSOR_THRESHOLD
@@ -98,6 +102,7 @@ direction_t direction_computation(int sensor_left, int sensor_straight, int sens
             && sensor_straight < SENSOR_THRESHOLD
             && sensor_right >= SENSOR_THRESHOLD)
     {
+        compass.COMPASS_angle = 80;
         return right;
     }
     else if (sensor_left < SENSOR_THRESHOLD

@@ -107,143 +107,141 @@ void period_1Hz(void)
 void period_100Hz(void)
 {
 
+    cnt = 0;
+    while (cnt < 5  &&  CAN_rx(can1, &msg, 0) ) //TODO: what if other message receives before processing prev msg.. it will crash ??
+    {
+        switch (msg.msg_id)
+        {
+            //check if can move sensor rx code to 100Hz
+            case 200: //TODO: Change to enums
+                hdr.mid = msg.msg_id;
+                hdr.dlc = msg.frame_fields.data_len;
+                from = (uint64_t *) &msg.data;
 
-///
+                if (!SENSOR_TX_SONARS_decode(&val, from, &hdr))
+                    printf("\nSensor Decode failed");
 
-    if (SW.getSwitch(1))
-       {
-           turnedon =1;
+                val.m0.SENSOR_SONARS_rear = back_sensor.SENSOR_BACK_cmd;
 
-       }
-       else if(SW.getSwitch(2))
-       {
-           turnedon = 0;
-           motor_data.MOTOR_CMD_drive = 1; //TODO: Discuss with motor team and decide the values.
-           motor_data.MOTOR_CMD_steer = stop;
-           hdr = DRIVER_TX_MOTOR_CMD_encode((uint64_t *) &msg.data, &motor_data);
-           msg.msg_id = hdr.mid;
-           msg.frame_fields.data_len = hdr.dlc;
+                dir = direction_computation(val.m0.SENSOR_SONARS_left,
+                        val.m0.SENSOR_SONARS_middle,
+                        val.m0.SENSOR_SONARS_right,
+                        val.m0.SENSOR_SONARS_rear);
+                LD.setNumber(dir);
 
-           if (CAN_tx(mycan, &msg, 0))
-           {
-               //printf("Message sent  %d\n", msg.data.bytes[0]);
-           }
+                motor_data.MOTOR_CMD_steer = dir;
+                motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
 
-       }
-       if (turnedon == 1)
-       {
-           cnt = 0;
-           while (cnt < 5  &&  CAN_rx(can1, &msg, 0) ) //TODO: what if other message receives before processing prev msg.. it will crash ??
-           {
-               switch (msg.msg_id)
-               {
-                      //check if can move sensor rx code to 100Hz
-                   case 200: //TODO: Change to enums
-                       hdr.mid = msg.msg_id;
-                       hdr.dlc = msg.frame_fields.data_len;
-                       from = (uint64_t *) &msg.data;
+                hdr = DRIVER_TX_MOTOR_CMD_encode((uint64_t *) &msg.data, &motor_data);
+                msg.msg_id = hdr.mid;
+                msg.frame_fields.data_len = hdr.dlc;
+                if (turnedon == 1 && isgpsstarted == 1)
+                {
+                    if (CAN_tx(mycan, &msg, 0))
+                    {
+                        //printf("Message sent  %d\n", msg.data.bytes[0]);
+                    }
+                    else
+                    {
+                        printf("Can tx failed\n");
+                        reset_can_bus();
+                    }
+                }
+                break;
 
-                       if (!SENSOR_TX_SONARS_decode(&val, from, &hdr))
-                           printf("\nSensor Decode failed");
+            case 0xA1:
+                hdr.mid = msg.msg_id;
+                hdr.dlc = msg.frame_fields.data_len;
+                from = (uint64_t *) &msg.data;
 
-                       val.m0.SENSOR_SONARS_rear = back_sensor.SENSOR_BACK_cmd;
+                if (!SENSOR_TX_sensorback_decode(&back_sensor, from, &hdr));
+                //printf("\nSensor back Decode failed");
+                break;
 
-                       dir = direction_computation(val.m0.SENSOR_SONARS_left,
-                               val.m0.SENSOR_SONARS_middle,
-                               val.m0.SENSOR_SONARS_right,
-                               val.m0.SENSOR_SONARS_rear);
-                       LD.setNumber(dir);
+            case 0xB0:
+                hdr.mid = msg.msg_id;
+                hdr.dlc = msg.frame_fields.data_len;
+                from = (uint64_t *) &msg.data;
 
-                       motor_data.MOTOR_CMD_steer = dir;
-                       motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
+                isgpsstarted = 1;
 
-                       hdr = DRIVER_TX_MOTOR_CMD_encode((uint64_t *) &msg.data, &motor_data);
-                       msg.msg_id = hdr.mid;
-                       msg.frame_fields.data_len = hdr.dlc;
-                       if (turnedon == 1 && isgpsstarted == 1)
-                       {
-                           if (CAN_tx(mycan, &msg, 0))
-                           {
-                               //printf("Message sent  %d\n", msg.data.bytes[0]);
-                           }
-                           else
-                           {
-                               printf("Can tx failed\n");
-                               reset_can_bus();
-                           }
-                       }
-                       break;
+                if (!GPS_TX_COMPASS_decode(&compass, from, &hdr));
+                //printf("\nCompass Decode failed");
+                //printf("d %d a %d", compass.COMPASS_direction, compass.COMPASS_angle);
+                //LD.setNumber((char)compass.COMPASS_angle);
+                break;
+            case 0xB1:
+                hdr.mid = msg.msg_id;
+                hdr.dlc = msg.frame_fields.data_len;
+                from = (uint64_t *) &msg.data;
 
-                   case 0xA1:
-                       hdr.mid = msg.msg_id;
-                       hdr.dlc = msg.frame_fields.data_len;
-                       from = (uint64_t *) &msg.data;
+                if (!GPS_TX_GPS_longitude_decode(&longitude, from, &hdr));
+                //printf(" %d %d", hdr.dlc, hdr.mid);
+                break;
 
-                       if (!SENSOR_TX_sensorback_decode(&back_sensor, from, &hdr));
-                           //printf("\nSensor back Decode failed");
-                       break;
+            case 0xB2:
+                hdr.mid = msg.msg_id;
+                hdr.dlc = msg.frame_fields.data_len;
+                from = (uint64_t *) &msg.data;
 
-                   case 0xB0:
-                       hdr.mid = msg.msg_id;
-                       hdr.dlc = msg.frame_fields.data_len;
-                       from = (uint64_t *) &msg.data;
+                if (!GPS_TX_GPS_latitude_decode(&latitude, from, &hdr));
+                //printf("\nLatitude Decode failed");
+                break;
+            case 0xB3:
+                hdr.mid = msg.msg_id;
+                hdr.dlc = msg.frame_fields.data_len;
+                from = (uint64_t *) &msg.data;
 
-                       isgpsstarted = 1;
+                if (!GPS_TX_GPS_heading_decode(&heading, from, &hdr));
+                //printf("\nHeading Decode failed");
+                break;
+            case 0xB4:
+                hdr.mid = msg.msg_id;
+                hdr.dlc = msg.frame_fields.data_len;
+                from = (uint64_t *) &msg.data;
+                //printf(" %d %d",hdr.mid,hdr.dlc);
+                if (!GPS_TX_GPS_dest_reached_decode(&dest_reached, from, &hdr));
+                //printf("\nDest reached Decode failed");
+                break;
+            case 0x02:
+                turnedon = 1;
+                break;
+            case 0x01:
+                turnedon = 0;
+                break;
 
-                       if (!GPS_TX_COMPASS_decode(&compass, from, &hdr));
-                           //printf("\nCompass Decode failed");
-                           //printf("d %d a %d", compass.COMPASS_direction, compass.COMPASS_angle);
-                           //LD.setNumber((char)compass.COMPASS_angle);
-                       break;
-                   case 0xB1:
-                       hdr.mid = msg.msg_id;
-                       hdr.dlc = msg.frame_fields.data_len;
-                       from = (uint64_t *) &msg.data;
+            default:
+                //printf("Unknown message received, msg id %d\n", (int) msg.msg_id);
+                //printf("U");
+                break;
+        } // Switch
+        cnt++;
+    } // while*/
 
-                       if (!GPS_TX_GPS_longitude_decode(&longitude, from, &hdr));
-                           //printf(" %d %d", hdr.dlc, hdr.mid);
-                       break;
-
-                   case 0xB2:
-                       hdr.mid = msg.msg_id;
-                       hdr.dlc = msg.frame_fields.data_len;
-                       from = (uint64_t *) &msg.data;
-
-                       if (!GPS_TX_GPS_latitude_decode(&latitude, from, &hdr));
-                           //printf("\nLatitude Decode failed");
-                       break;
-                   case 0xB3:
-                       hdr.mid = msg.msg_id;
-                       hdr.dlc = msg.frame_fields.data_len;
-                       from = (uint64_t *) &msg.data;
-
-                       if (!GPS_TX_GPS_heading_decode(&heading, from, &hdr));
-                           //printf("\nHeading Decode failed");
-                       break;
-                   case 0xB4:
-                       hdr.mid = msg.msg_id;
-                       hdr.dlc = msg.frame_fields.data_len;
-                       from = (uint64_t *) &msg.data;
-                       //printf(" %d %d",hdr.mid,hdr.dlc);
-                       if (!GPS_TX_GPS_dest_reached_decode(&dest_reached, from, &hdr));
-                           //printf("\nDest reached Decode failed");
-                       break;
-                   default:
-                       //printf("Unknown message received, msg id %d\n", (int) msg.msg_id);
-                       //printf("U");
-                       break;
-               } // Switch
-               cnt++;
-           } // while*/
-
-
-       }
 }
 
 void period_10Hz(void)
 {
 
+    if (SW.getSwitch(1))
+    {
+        turnedon =1;
 
+    }
+    else if(SW.getSwitch(2))
+    {
+        turnedon = 0;
+        motor_data.MOTOR_CMD_drive = 1;
+        motor_data.MOTOR_CMD_steer = stop;
+        hdr = DRIVER_TX_MOTOR_CMD_encode((uint64_t *) &msg.data, &motor_data);
+        msg.msg_id = hdr.mid;
+        msg.frame_fields.data_len = hdr.dlc;
+
+        if (CAN_tx(mycan, &msg, 0))
+        {
+            //printf("Message sent  %d\n", msg.data.bytes[0]);
+        }
+    }
 }
 
 void period_1000Hz(void)
@@ -254,7 +252,6 @@ void period_1000Hz(void)
 
 void reset_can_bus()
 {
-
     Storage::append("log_messages", "Motor direction update failed", 30, 0);
     CAN_reset_bus(mycan);
     if (CAN_is_bus_off(mycan))

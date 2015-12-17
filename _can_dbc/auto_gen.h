@@ -26,7 +26,7 @@ static const msg_hdr_t GPS_TX_COMPASS_HDR =                   { 0xB0, 3 };
 static const msg_hdr_t GPS_TX_GPS_longitude_HDR =             { 0xB1, 8 };
 static const msg_hdr_t GPS_TX_GPS_latitude_HDR =              { 0xB2, 8 };
 static const msg_hdr_t GPS_TX_GPS_heading_HDR =               { 0xB3, 8 };
-static const msg_hdr_t GPS_TX_GPS_dest_reached_HDR =          { 0xB4, 1 };
+static const msg_hdr_t GPS_TX_GPS_dest_reached_HDR =          { 0xB4, 4 };
 static const msg_hdr_t SENSOR_TX_SONARS_HDR =                 {  200, 6 };
 static const msg_hdr_t DRIVER_TX_MOTOR_CMD_HDR =              { 0X020, 2 };
 
@@ -83,9 +83,9 @@ typedef struct {
 } GPS_TX_GPS_heading_t;
 
 
-/// Message: GPS_dest_reached from 'GPS', DLC: 1 byte(s), MID: 0xB4
+/// Message: GPS_dest_reached from 'GPS', DLC: 4 byte(s), MID: 0xB4
 typedef struct {
-    uint8_t GPS_dest_reached;                 ///< B7:0   Destination: DRIVER,GPS,MOTOR
+    uint32_t GPS_dest_reached;                ///< B31:0   Destination: DRIVER,GPS,MOTOR
 
     mia_info_t mia_info;
 } GPS_TX_GPS_dest_reached_t;
@@ -214,8 +214,11 @@ static msg_hdr_t GPS_TX_GPS_dest_reached_encode(uint64_t *to, GPS_TX_GPS_dest_re
     uint8_t *bytes = (uint8_t*) to;
     uint64_t raw_signal;
 
-    raw_signal = ((uint64_t)(((from->GPS_dest_reached - (0)) / 1.0) + 0.5)) & 0xff;
+    raw_signal = ((uint64_t)(((from->GPS_dest_reached - (0)) / 1.0) + 0.5)) & 0xffffffff;
     bytes[0] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B0
+    bytes[1] |= (((uint8_t)(raw_signal >> 8) & 0xff) << 0); ///< 8 bit(s) to B8
+    bytes[2] |= (((uint8_t)(raw_signal >> 16) & 0xff) << 0); ///< 8 bit(s) to B16
+    bytes[3] |= (((uint8_t)(raw_signal >> 24) & 0xff) << 0); ///< 8 bit(s) to B24
 
     return GPS_TX_GPS_dest_reached_HDR;
 }
@@ -393,6 +396,9 @@ static inline bool GPS_TX_GPS_dest_reached_decode(GPS_TX_GPS_dest_reached_t *to,
 
     raw_signal = 0;
     raw_signal |= ((uint64_t)((bytes[0] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B0
+    raw_signal |= ((uint64_t)((bytes[1] >> 0) & 0xff)) << 8; ///< 8 bit(s) from B8
+    raw_signal |= ((uint64_t)((bytes[2] >> 0) & 0xff)) << 16; ///< 8 bit(s) from B16
+    raw_signal |= ((uint64_t)((bytes[3] >> 0) & 0xff)) << 24; ///< 8 bit(s) from B24
     to->GPS_dest_reached = (raw_signal * 1.0) + (0);
 
     to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter

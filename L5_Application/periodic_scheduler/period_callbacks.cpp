@@ -131,7 +131,6 @@ void period_100Hz(void)
     **/
     LD.setNumber(dir);
     motor_data.MOTOR_CMD_drive = 1;
-
     motor_data.MOTOR_CMD_steer = dir;
     if (dir == straight)
         motor_data.MOTOR_CMD_angle = compass.COMPASS_angle; // set the angle
@@ -200,7 +199,7 @@ void period_10Hz(void)
         {
             switch (msg.msg_id)
             {
-
+                   //check if can move sensor rx code to 100Hz
                 case 200: //TODO: Change to enums
                     hdr.mid = msg.msg_id;
                     hdr.dlc = msg.frame_fields.data_len;

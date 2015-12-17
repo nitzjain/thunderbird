@@ -47,7 +47,7 @@ void maintain_speed()
     if(white_count < 5 )
     {
         dc_motor_instance.setDriveMotor(pwm_mod);
-        pwm_mod = pwm_mod + 0.001;
+        pwm_mod = pwm_mod + 0.0001;
     }
     else if(white_count <=5 && white_count <10)
     {
@@ -55,7 +55,7 @@ void maintain_speed()
     }
     else
     {
-        pwm_mod = pwm_mod - 0.001;
+        pwm_mod = pwm_mod - 0.002;
         dc_motor_instance.setDriveMotor(pwm_mod);
         if(pwm_mod <=7.9)
         {

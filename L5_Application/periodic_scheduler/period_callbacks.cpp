@@ -107,7 +107,7 @@ void period_1Hz(void)
 void period_100Hz(void)
 {
 
-<<<<<<< HEAD
+
     val.m0.SENSOR_SONARS_rear = back_sensor.SENSOR_BACK_cmd;
 
     dir = direction_computation(val.m0.SENSOR_SONARS_left,
@@ -128,7 +128,7 @@ void period_100Hz(void)
     }
     **/
     LD.setNumber(dir);
-    motor_data.MOTOR_CMD_drive = 1;lIFEISFUN1@3$
+    motor_data.MOTOR_CMD_drive = 1;
 
     motor_data.MOTOR_CMD_steer = dir;
     motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;

@@ -27,7 +27,7 @@ static const msg_hdr_t GPS_TX_GPS_latitude_HDR =              { 0xB2, 8 };
 static const msg_hdr_t GPS_TX_GPS_heading_HDR =               { 0xB3, 8 };
 static const msg_hdr_t GPS_TX_GPS_dest_reached_HDR =          { 0xB4, 4 };
 static const msg_hdr_t SENSOR_TX_SONARS_HDR =                 {  200, 6 };
-static const msg_hdr_t DRIVER_TX_MOTOR_CMD_HDR =              { 0X020, 2 };
+static const msg_hdr_t DRIVER_TX_MOTOR_CMD_HDR =              { 0X020, 3 };
 
 
 /// Message: HEARTBEAT from 'DRIVER', DLC: 1 byte(s), MID: 0xA0
@@ -125,11 +125,11 @@ typedef struct {
 /// @} MUX'd message
 
 
-/// Message: MOTOR_CMD from 'DRIVER', DLC: 2 byte(s), MID: 0X020
+/// Message: MOTOR_CMD from 'DRIVER', DLC: 3 byte(s), MID: 0X020
 typedef struct {
-    int8_t MOTOR_CMD_steer : 4;               ///< B3:0  Min: -5 Max: 5   Destination: MOTOR
-    uint8_t MOTOR_CMD_drive : 4;              ///< B7:4  Min: 0 Max: 9   Destination: MOTOR
-    uint8_t MOTOR_CMD_angle;                  ///< B15:8   Destination: MOTOR
+    int16_t MOTOR_CMD_steer;                  ///< B7:0   Destination: MOTOR
+    uint8_t MOTOR_CMD_drive;                  ///< B15:8   Destination: MOTOR
+    uint8_t MOTOR_CMD_angle;                  ///< B23:16   Destination: MOTOR
 
     mia_info_t mia_info;
 } DRIVER_TX_MOTOR_CMD_t;
@@ -188,18 +188,14 @@ static msg_hdr_t DRIVER_TX_MOTOR_CMD_encode(uint64_t *to, DRIVER_TX_MOTOR_CMD_t 
     uint8_t *bytes = (uint8_t*) to;
     uint64_t raw_signal;
 
-    if(from->MOTOR_CMD_steer < -5) { from->MOTOR_CMD_steer = -5; }
-    if(from->MOTOR_CMD_steer > 5) { from->MOTOR_CMD_steer = 5; }
-    raw_signal = ((uint64_t)(((from->MOTOR_CMD_steer - (-5)) / 1.0) + 0.5)) & 0x0f;
-    bytes[0] |= (((uint8_t)(raw_signal >> 0) & 0x0f) << 0); ///< 4 bit(s) to B0
+    raw_signal = ((uint64_t)(((from->MOTOR_CMD_steer - (0)) / 1.0) + 0.5)) & 0xff;
+    bytes[0] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B0
 
-    if(from->MOTOR_CMD_drive < 0) { from->MOTOR_CMD_drive = 0; }
-    if(from->MOTOR_CMD_drive > 9) { from->MOTOR_CMD_drive = 9; }
-    raw_signal = ((uint64_t)(((from->MOTOR_CMD_drive - (0)) / 1.0) + 0.5)) & 0x0f;
-    bytes[0] |= (((uint8_t)(raw_signal >> 0) & 0x0f) << 4); ///< 4 bit(s) to B4
+    raw_signal = ((uint64_t)(((from->MOTOR_CMD_drive - (0)) / 1.0) + 0.5)) & 0xff;
+    bytes[1] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B8
 
     raw_signal = ((uint64_t)(((from->MOTOR_CMD_angle - (0)) / 1.0) + 0.5)) & 0xff;
-    bytes[1] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B8
+    bytes[2] |= (((uint8_t)(raw_signal >> 0) & 0xff) << 0); ///< 8 bit(s) to B16
 
     return DRIVER_TX_MOTOR_CMD_HDR;
 }

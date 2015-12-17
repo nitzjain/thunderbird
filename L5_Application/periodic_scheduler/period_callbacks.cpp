@@ -108,7 +108,8 @@ bool period_reg_tlm(void)
 
 void period_1Hz(void)
 {
-    //printf("\nWHite Count = %d", white_count);
+//    printf("\nWHite Count = %d", white_count);
+//    printf(" PWM = %f\n", pwm_mod);
     white_count = 0;
 }
 
@@ -181,8 +182,8 @@ void period_100Hz(void)
                 if (straight == to.MOTOR_CMD_steer) //go forward - 000
                 {
                     LE.toggle(1);
-                    //maintain_speed();
-
+                    maintain_speed();
+                    //dc_motor_instance.setDriveMotor(7.5);
                     steer.setSteerMotor(7);
                 }
                 else if (left == to.MOTOR_CMD_steer) //go left 001, 011
@@ -195,7 +196,7 @@ void period_100Hz(void)
                 }
                 else if(slight_left == to.MOTOR_CMD_steer)
                 {
-                    steer.setSteerMotor(6.25);
+                    steer.setSteerMotor(5.5);
                     maintain_speed();
                 }
                 else if (right == to.MOTOR_CMD_steer) //go right 010, 100, 110
@@ -208,7 +209,7 @@ void period_100Hz(void)
                 }
                 else if(slight_right == to.MOTOR_CMD_steer)
                 {
-                    steer.setSteerMotor(7.5);
+                    steer.setSteerMotor(8.5);
                     maintain_speed();
                 }
                 else if (reverse == to.MOTOR_CMD_steer) //go back 111, 101

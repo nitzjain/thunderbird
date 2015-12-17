@@ -4,7 +4,7 @@
 #define __GENERATED_DBC_PARSER
 #include <stdbool.h>
 #include <stdint.h>
-
+#include <stdio.h>
 
 
 /// Missing in Action structure

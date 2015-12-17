@@ -68,13 +68,8 @@ void period_10Hz(void)
 {
     gps_data_t chkp_data;
     direction_t move_to_dir;
-    float distance;
+    float distance = 0;
 
-
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/origin/gpssensor
     chkp_data.Latitude = 37.3352778;
     chkp_data.Longitude = 121.881388;
     //data_gps.Latitude = 37.336834;
@@ -102,7 +97,6 @@ void period_10Hz(void)
         Compass.COMPASS_angle = move_to_dir.angle;
         Compass.COMPASS_direction = move_to_dir.dir;
 
-        distance = 100;
         memcpy(&Longitude.GPS_longitude_cur, &gps_values.Longitude, sizeof(float));
         memcpy(&Longitude.GPS_longitude_dst, &chkp_data.Longitude, sizeof(float));
         memcpy(&Latitude.GPS_latitude_cur, &gps_values.Latitude, sizeof(float));
@@ -115,8 +109,8 @@ void period_10Hz(void)
         msg1.msg_id = h1.mid;
         msg1.frame_fields.data_len = h1.dlc;
 
-        //if(gps_values.Latitude != 0.0)
-        if(1)
+        if(gps_values.Longitude != 0.0)
+        //if(1)
         {
             if(CAN_tx(can1, &msg1, 0)){
             }

@@ -61,8 +61,11 @@ BO_ 0xB4 GPS_dest_reached: 4 GPS
  SG_ GPS_dest_reached : 0|32@1+ (1,0) [0|0] "" DRIVER,GPS,MOTOR
  
 BO_ 0xC1 Check_points: 8 BRIDGE
- SG_ GPS_longitude_cur : 0|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS,MOTOR
- SG_ GPS_longitude_dst : 32|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS,MOTOR
+ SG_ longitude : 0|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS
+ SG_ latitude : 32|32@1+ (1,0) [0|0] "DEGREE" DRIVER,GPS
+
+BO_ 0xC0 Count: 1 BRIDGE
+ SG_ count : 0|8@1- (1,0) [0|0] "DEGREE" DRIVER,GPS
 
 
 

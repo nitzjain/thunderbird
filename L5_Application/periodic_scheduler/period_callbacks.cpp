@@ -70,10 +70,11 @@ void period_10Hz(void)
     direction_t move_to_dir;
     float distance;
 
-   printf(" %f, %f :",gps_values.Longitude, gps_values.Latitude);
-   printf("yaw: %f",compass_values.yaw);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/origin/gpssensor
     chkp_data.Latitude = 37.3352778;
     chkp_data.Longitude = 121.881388;
     //data_gps.Latitude = 37.336834;
@@ -89,7 +90,6 @@ void period_10Hz(void)
     else{
     GetDirection(&move_to_dir,bearing_sector,heading_sector);
     distance = dist_to_destination(gps_values,chkp_data);
-    printf("direction is %d,%d, %f",move_to_dir.angle,move_to_dir.dir, distance);
     }
 
     can_msg_t msg1,msg2,msg3,msg4,msg5;
@@ -97,6 +97,7 @@ void period_10Hz(void)
         GPS_TX_GPS_longitude_t Longitude;
         GPS_TX_GPS_latitude_t Latitude;
         GPS_TX_GPS_heading_t Heading;
+
         GPS_TX_GPS_dest_reached_t Dest;
         Compass.COMPASS_angle = move_to_dir.angle;
         Compass.COMPASS_direction = move_to_dir.dir;
@@ -118,10 +119,8 @@ void period_10Hz(void)
         if(1)
         {
             if(CAN_tx(can1, &msg1, 0)){
-                printf("pass1\n");
             }
             else{
-                printf("fail\n");
             }
 
 
@@ -129,7 +128,6 @@ void period_10Hz(void)
             msg2.msg_id = h2.mid;
             msg2.frame_fields.data_len = h2.dlc;
             if(CAN_tx(can1,&msg2,0)){
-                printf("pass2\n");
             }
 
 
@@ -137,23 +135,20 @@ void period_10Hz(void)
             msg3.msg_id = h3.mid;
             msg3.frame_fields.data_len = h3.dlc;
             if(CAN_tx(can1,&msg3,0)){
-                printf("pass3\n");
             }
 
             msg_hdr_t h4 = GPS_TX_GPS_heading_encode((uint64_t*)&msg4.data,&Heading);
             msg4.msg_id = h4.mid;
             msg4.frame_fields.data_len = h4.dlc;
             if(CAN_tx(can1,&msg4,0)){
-            printf("pass4\n");
             }
             msg_hdr_t h5 = GPS_TX_GPS_dest_reached_encode((uint64_t*)&msg5.data, &Dest);
             msg5.msg_id = h5.mid;
             msg5.frame_fields.data_len = h5.dlc;
+
             if(CAN_tx(can1, &msg5, 0)){
-                printf("pass5\n");
             }
             else{
-                printf("fail\n");
             }
         }
 }

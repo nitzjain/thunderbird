@@ -112,8 +112,6 @@ class Gps_Task : public scheduler_task
             gps_values.Latitude = convert_to_decimal(gps_values.Latitude);
             gps_values.Longitude = convert_to_decimal(gps_values.Longitude);
 
-            printf("Lat %f, %f\n",gps_values.Latitude,gps_values.Longitude);
-
             return true;
         }
 };

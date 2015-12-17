@@ -85,6 +85,15 @@ void count_interrupts()
 
 int main(void)
 {
+//    while(1)
+//    {
+//        int X = AS.getX();
+//        int Y = AS.getY();
+//        int Z = AS.getZ();
+//
+//        printf("\nX= %d, Y = %d, Z=%d",X,Y,Z);
+//        delay_ms(1000);
+//    }
     CAN_init(can1, 250, 1024, 1024, NULL, NULL); //initialize can bus 1
     CAN_bypass_filter_accept_all_msgs(); //accept all messages
     CAN_reset_bus(can1); //resets the CAN bus*/

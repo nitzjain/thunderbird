@@ -67,15 +67,17 @@ can_msg_t control;
 #define up    7.9
 #define up_L  7.6
 #define up_R  7.6
-#define down  6.5
+#define down  6.0
 #define SL    5
 #define S_SL  6.25
 #define SR    8
 #define S_SR  7.5
 
-float pwm_mod = 7.9;
+float pwm_mod = 7.91;
 
 GPIO rpm(P2_7); // Control P1.20
+GPIO rear_light_1(P2_1);
+GPIO rear_light_2(P2_2);
 
 int vehicle_moved = 0;
 
@@ -92,7 +94,7 @@ float sright = 0; ///< B43:32   Destination: DRIVER,IO,MOTOR
 float srear = 0; ///< B55:44   Destination: DRIVER,IO,MOTOR
 uint8_t degrees = 0;
 float gps_start, gps_end;
-
+extern int X;
 /*Motor Initialization*/
 bool period_init(void)
 {
@@ -108,7 +110,8 @@ bool period_reg_tlm(void)
 
 void period_1Hz(void)
 {
-//    printf("\nWHite Count = %d", white_count);
+//    maintain_speed();
+//    printf("\nX inclination = %d", X);
 //    printf(" PWM = %f\n", pwm_mod);
     white_count = 0;
 }
@@ -135,7 +138,9 @@ void period_100Hz(void)
     if (flag == 0)
     {
         dc_motor_instance.setDriveMotor(7.5); //Initialize the motor
-        steer.setSteerMotor(7);
+        steer.setSteerMotor(6.8);
+        rear_light_1.setAsOutput();
+        rear_light_2.setAsOutput();
         flag++;
     }
 
@@ -177,54 +182,58 @@ void period_100Hz(void)
             /*Start the feedback*/
             if (DRIVER_TX_MOTOR_CMD_decode(&to, from, &hdr))
             {
-                LD.setNumber(to.MOTOR_CMD_steer);
+                LD.setNumber((char)to.MOTOR_CMD_steer);
                 degrees = to.MOTOR_CMD_angle;
                 if (straight == to.MOTOR_CMD_steer) //go forward - 000
                 {
                     LE.toggle(1);
-                    maintain_speed();
-                    //dc_motor_instance.setDriveMotor(7.5);
-                    steer.setSteerMotor(7);
+                    //maintain_speed();
+                    dc_motor_instance.setDriveMotor(7.91);
+                    steer.setSteerMotor(6.8);
                 }
                 else if (left == to.MOTOR_CMD_steer) //go left 001, 011
                 {
                     LE.toggle(2);
-                    //steer.setSteerMotor(SL);
-                    //dc_motor_instance.setDriveMotor(pwm_mod);
-                    maintain_speed();
                     precise_steer_left(to.MOTOR_CMD_angle );//give command value instead of 10
+                    //maintain_speed();
+                    dc_motor_instance.setDriveMotor(7.91);
                 }
                 else if(slight_left == to.MOTOR_CMD_steer)
                 {
-                    steer.setSteerMotor(5.5);
-                    maintain_speed();
+                    steer.setSteerMotor(4);
+                    //maintain_speed();
+                    dc_motor_instance.setDriveMotor(7.91);
                 }
                 else if (right == to.MOTOR_CMD_steer) //go right 010, 100, 110
                 {
                     LE.toggle(3);
-                    //steer.setSteerMotor(SR);
-                    //dc_motor_instance.setDriveMotor(pwm_mod);
-                    maintain_speed();
                     precise_steer_right(to.MOTOR_CMD_angle );//give command value instead of 10
+                    //maintain_speed();
+                    dc_motor_instance.setDriveMotor(7.91);
+
                 }
                 else if(slight_right == to.MOTOR_CMD_steer)
                 {
-                    steer.setSteerMotor(8.5);
-                    maintain_speed();
+                    steer.setSteerMotor(8.8);
+                    //maintain_speed();
+                    dc_motor_instance.setDriveMotor(7.91);
                 }
                 else if (reverse == to.MOTOR_CMD_steer) //go back 111, 101
                 {
                     LE.toggle(4);
                     dc_motor_instance.setDriveMotor(7.5);
+                    steer.setSteerMotor(8.8);
                     dc_motor_instance.setDriveMotor(down);
-                    steer.setSteerMotor(SR);
+                    rear_light_1.setHigh();
+                    rear_light_2.setHigh();
                 }
                 else if (stop == to.MOTOR_CMD_steer)
                 {
-                    //LE.toggle(4);
                     dc_motor_instance.setDriveMotor(7.5);
-                    steer.setSteerMotor(7);
+                    steer.setSteerMotor(6.8);
                 }
+                rear_light_1.setLow();
+                rear_light_2.setLow();
             }
         }
     }

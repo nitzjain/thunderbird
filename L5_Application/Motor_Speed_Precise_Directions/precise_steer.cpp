@@ -9,7 +9,7 @@
  * Sectors - Take right - Sector 0 to 9
  *         - Take left - Sectors 10 to 17
  * PWM     - Left ranges - 4 to 7
- *         - Right ranges - 7 to 10 - 7 being the center
+ *         - Right ranges - 7 to 10 - 6.8 being the center
  * CAUTION: 4 is extreme left and 10 is extreme right
  *
  */
@@ -34,43 +34,43 @@ void precise_steer_left(int command)
     /*Precise steer left*/
     if (angle_0 == command)
     {
-        steer.setSteerMotor(7.0);
+        steer.setSteerMotor(6.8);
     }
     else if (angle_20 == command)
     {
-        steer.setSteerMotor(6.7);
+        steer.setSteerMotor(6.5);
     }
     else if (angle_40 == command)
     {
-        steer.setSteerMotor(6.4);
+        steer.setSteerMotor(6.2);
     }
     else if (angle_60 == command)
     {
-        steer.setSteerMotor(6.1);
+        steer.setSteerMotor(5.9);
     }
     else if (angle_80 == command)
     {
-        steer.setSteerMotor(5.8);
+        steer.setSteerMotor(5.6);
     }
     else if (angle_100 == command)
     {
-        steer.setSteerMotor(5.5);
+        steer.setSteerMotor(5.3);
     }
     else if (angle_120 == command)
     {
-        steer.setSteerMotor(5.2);
+        steer.setSteerMotor(5.0);
     }
     else if (angle_140 == command)
     {
-        steer.setSteerMotor(4.9);
+        steer.setSteerMotor(4.7);
     }
     else if (angle_160 == command)
     {
-        steer.setSteerMotor(4.6);
+        steer.setSteerMotor(4.4);
     }
     else if (angle_180 == command)
     {
-        steer.setSteerMotor(4.3);
+        steer.setSteerMotor(4.1);
     }
 }
 
@@ -80,42 +80,42 @@ void precise_steer_right(int command)
     /*Precise steer right*/
     if (angle_0 == command)
     {
-        steer.setSteerMotor(7.0);
+        steer.setSteerMotor(6.8);
     }
     else if (angle_20 == command)
     {
-        steer.setSteerMotor(7.3);
+        steer.setSteerMotor(7.1);
     }
     else if (angle_40 == command)
     {
-        steer.setSteerMotor(7.6);
+        steer.setSteerMotor(7.4);
     }
     else if (angle_60 == command)
     {
-        steer.setSteerMotor(7.9);
+        steer.setSteerMotor(7.7);
     }
     else if (angle_80 == command)
     {
-        steer.setSteerMotor(8.2);
+        steer.setSteerMotor(8.0);
     }
     else if (angle_100 == command)
     {
-        steer.setSteerMotor(8.5);
+        steer.setSteerMotor(8.3);
     }
     else if (angle_120 == command)
     {
-        steer.setSteerMotor(8.8);
+        steer.setSteerMotor(8.6);
     }
     else if (angle_140 == command)
     {
-        steer.setSteerMotor(9.1);
+        steer.setSteerMotor(8.9);
     }
     else if (angle_160 == command)
     {
-        steer.setSteerMotor(9.4);
+        steer.setSteerMotor(9.2);
     }
     else if (angle_180 == command)
     {
-        steer.setSteerMotor(9.7);
+        steer.setSteerMotor(9.5);
     }
 }

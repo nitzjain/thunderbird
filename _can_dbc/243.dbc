@@ -57,10 +57,10 @@ BO_ 200 SONARS: 6 SENSOR
  SG_ SENSOR_SONARS_no_filt_rear m1 : 44|12@1+ (0.1,0) [0|400] "" NOONE
 
 
-BO_ 0X020 MOTOR_CMD: 2 DRIVER
- SG_ MOTOR_CMD_steer : 0|4@1- (1,-5) [-5|5] "" MOTOR
- SG_ MOTOR_CMD_drive : 4|4@1+ (1,0) [0|9] "" MOTOR
- SG_ MOTOR_CMD_angle : 8|8@1+ (1,0) [0|0] "" MOTOR
+BO_ 0X020 MOTOR_CMD: 3 DRIVER
+ SG_ MOTOR_CMD_steer : 0|8@1- (1,0) [0|0] "" MOTOR
+ SG_ MOTOR_CMD_drive : 8|8@1+ (1,0) [0|0] "" MOTOR
+ SG_ MOTOR_CMD_angle : 16|8@1+ (1,0) [0|0] "" MOTOR
 
 CM_ BU_ NOONE "No node, used to indicate if it's a debug message going to no one";
 CM_ BU_ DRIVER "The DRIVER controller driving the car";

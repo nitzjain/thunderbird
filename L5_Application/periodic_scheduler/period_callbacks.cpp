@@ -82,8 +82,7 @@ GPIO rear_light_2(P2_2);
 int vehicle_moved = 0;
 
 const uint32_t HEARTBEAT__MIA_MS = 0;
-const DRIVER_TX_HEARTBEAT_t HEARTBEAT__MIA_MSG =
-{ 0 };
+//const DRIVER_TX_HEARTBEAT_t HEARTBEAT__MIA_MSG ={ 0 };
 const uint32_t MOTOR_CMD__MIA_MS = 0;
 const DRIVER_TX_MOTOR_CMD_t MOTOR_CMD__MIA_MSG =
 { 0 };

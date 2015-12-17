@@ -73,7 +73,7 @@ can_msg_t control;
 #define SR    8
 #define S_SR  7.5
 
-float pwm_mod = 7.91;
+float pwm_mod = 7.92;
 
 GPIO rpm(P2_7); // Control P1.20
 GPIO rear_light_1(P2_1);
@@ -187,36 +187,36 @@ void period_100Hz(void)
                 if (straight == to.MOTOR_CMD_steer) //go forward - 000
                 {
                     LE.toggle(1);
-                    //maintain_speed();
-                    dc_motor_instance.setDriveMotor(7.91);
+                     maintain_speed();
+                    //dc_motor_instance.setDriveMotor(7.91);
                     steer.setSteerMotor(6.8);
                 }
                 else if (left == to.MOTOR_CMD_steer) //go left 001, 011
                 {
                     LE.toggle(2);
                     precise_steer_left(to.MOTOR_CMD_angle );//give command value instead of 10
-                    //maintain_speed();
-                    dc_motor_instance.setDriveMotor(7.91);
+                    maintain_speed();
+                    //dc_motor_instance.setDriveMotor(7.91);
                 }
                 else if(slight_left == to.MOTOR_CMD_steer)
                 {
                     steer.setSteerMotor(4);
-                    //maintain_speed();
-                    dc_motor_instance.setDriveMotor(7.91);
+                    maintain_speed();
+                    //dc_motor_instance.setDriveMotor(7.91);
                 }
                 else if (right == to.MOTOR_CMD_steer) //go right 010, 100, 110
                 {
                     LE.toggle(3);
                     precise_steer_right(to.MOTOR_CMD_angle );//give command value instead of 10
-                    //maintain_speed();
-                    dc_motor_instance.setDriveMotor(7.91);
+                    maintain_speed();
+                    //dc_motor_instance.setDriveMotor(7.91);
 
                 }
                 else if(slight_right == to.MOTOR_CMD_steer)
                 {
                     steer.setSteerMotor(8.8);
-                    //maintain_speed();
-                    dc_motor_instance.setDriveMotor(7.91);
+                    maintain_speed();
+                    //dc_motor_instance.setDriveMotor(7.91);
                 }
                 else if (reverse == to.MOTOR_CMD_steer) //go back 111, 101
                 {

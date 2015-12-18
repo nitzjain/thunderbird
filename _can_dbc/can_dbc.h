@@ -1,4 +1,4 @@
-/// DBC file: _can_dbc/243.dbc    Self node: DRIVER
+/// DBC file: ../_can_dbc/243.dbc    Self node: DRIVER
 /// This file should be included by a source file, for example: #include "generated.c"
 #ifndef __GENEARTED_DBC_PARSER
 #define __GENERATED_DBC_PARSER
@@ -26,7 +26,7 @@ static const msg_hdr_t IO_TX_IOSTOP_HDR =                     { 0x01, 1 };
 static const msg_hdr_t IO_TX_IOCHECKPOINTCOUNT_HDR =          { 0x03, 1 };
 static const msg_hdr_t GPS_TX_GPSCHECKPOINTCOUNT_HDR =        { 0x05, 1 };
 static const msg_hdr_t IO_TX_IOGPSCHECKPOINT_HDR =            { 0x04, 8 };
-static const msg_hdr_t GPS_TX_COMPASS_HDR =                   { 0xB0, 3 };
+static const msg_hdr_t GPS_TX_COMPASS_HDR =                   { 0xB0, 4 };
 static const msg_hdr_t GPS_TX_GPS_longitude_HDR =             { 0xB1, 8 };
 static const msg_hdr_t GPS_TX_GPS_latitude_HDR =              { 0xB2, 8 };
 static const msg_hdr_t GPS_TX_GPS_heading_HDR =               { 0xB3, 8 };
@@ -85,14 +85,14 @@ typedef struct {
 
 /// Message: IOGPSCHECKPOINT from 'IO', DLC: 8 byte(s), MID: 0x04
 typedef struct {
-    uint32_t IOLATITUDE;                      ///< B31:0   Destination: DRIVER,GPS
-    uint32_t IOLONGTITUDE;                    ///< B63:32   Destination: DRIVER,GPS
+    float IOLATITUDE;                         ///< B31:0   Destination: DRIVER,GPS
+    float IOLONGTITUDE;                       ///< B63:32   Destination: DRIVER,GPS
 
     mia_info_t mia_info;
 } IO_TX_IOGPSCHECKPOINT_t;
 
 
-/// Message: COMPASS from 'GPS', DLC: 3 byte(s), MID: 0xB0
+/// Message: COMPASS from 'GPS', DLC: 4 byte(s), MID: 0xB0
 typedef struct {
     uint8_t COMPASS_direction;                ///< B7:0   Destination: DRIVER,GPS,MOTOR
     int32_t COMPASS_angle;                    ///< B23:8   Destination: DRIVER,GPS,MOTOR
@@ -385,14 +385,14 @@ static inline bool IO_TX_IOGPSCHECKPOINT_decode(IO_TX_IOGPSCHECKPOINT_t *to, con
     raw_signal |= ((uint64_t)((bytes[1] >> 0) & 0xff)) << 8; ///< 8 bit(s) from B8
     raw_signal |= ((uint64_t)((bytes[2] >> 0) & 0xff)) << 16; ///< 8 bit(s) from B16
     raw_signal |= ((uint64_t)((bytes[3] >> 0) & 0xff)) << 24; ///< 8 bit(s) from B24
-    to->IOLATITUDE = (raw_signal * 1.0) + (0);
+    to->IOLATITUDE = (raw_signal * 0.1) + (0);
 
     raw_signal = 0;
     raw_signal |= ((uint64_t)((bytes[4] >> 0) & 0xff)) << 0; ///< 8 bit(s) from B32
     raw_signal |= ((uint64_t)((bytes[5] >> 0) & 0xff)) << 8; ///< 8 bit(s) from B40
     raw_signal |= ((uint64_t)((bytes[6] >> 0) & 0xff)) << 16; ///< 8 bit(s) from B48
     raw_signal |= ((uint64_t)((bytes[7] >> 0) & 0xff)) << 24; ///< 8 bit(s) from B56
-    to->IOLONGTITUDE = (raw_signal * 1.0) + (0);
+    to->IOLONGTITUDE = (raw_signal * 0.1) + (0);
 
     to->mia_info.mia_counter_ms = 0; ///< Reset the MIA counter
     return success;
@@ -886,21 +886,20 @@ static inline bool GPS_TX_GPS_dest_reached_handle_mia(GPS_TX_GPS_dest_reached_t 
 static inline bool SENSOR_TX_SONARS_handle_mia(SENSOR_TX_SONARS_t *msg, uint32_t time_incr_ms)
 {
     bool mia_occurred = false;
-#if 0
-    const mia_info_t old_mia = msg->mia_info;
-    msg->mia_info.is_mia = (msg->mia_info.mia_counter_ms >= SONARS__MIA_MS);
+    const mia_info_t old_mia = msg->m0.mia_info;
+    msg->m0.mia_info.is_mia = (msg->m0.mia_info.mia_counter_ms >= SONARS__MIA_MS);
 
-    if (!msg->mia_info.is_mia) { 
-        msg->mia_info.mia_counter_ms += time_incr_ms;
+    if (!msg->m0.mia_info.is_mia) {
+        msg->m0.mia_info.mia_counter_ms += time_incr_ms;
     }
     else if(!old_mia.is_mia)   { 
         // Copy MIA struct, then re-write the MIA counter and is_mia that is overwriten
         *msg = SONARS__MIA_MSG;
-        msg->mia_info.mia_counter_ms = SONARS__MIA_MS;
-        msg->mia_info.is_mia = true;
+        msg->m0.mia_info.mia_counter_ms = SONARS__MIA_MS;
+        msg->m0.mia_info.is_mia = true;
         mia_occurred = true;
     }
-#endif
+
     return mia_occurred;
 }
 #endif

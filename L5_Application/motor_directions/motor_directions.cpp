@@ -48,14 +48,14 @@ direction_t direction_computation(int sensor_left, int sensor_straight, int sens
 {
 
     if (dest_reached.GPS_dest_reached)
-            return stop;
+           return stop;
 
     direction_t gps_dir = gps_direction();
 
     if (sensor_left >= SENSOR_THRESHOLD && sensor_straight >= SENSOR_THRESHOLD
             && sensor_right >= SENSOR_THRESHOLD)
     {
-            return gps_dir;
+            return straight;
     }
     else if (sensor_left >= SENSOR_THRESHOLD
             && sensor_straight >= SENSOR_THRESHOLD
@@ -64,7 +64,7 @@ direction_t direction_computation(int sensor_left, int sensor_straight, int sens
                 if (gps_dir == right)
                        return straight;
                 else
-                       return gps_dir;
+                     return gps_dir;
     }
     else if (sensor_left >= SENSOR_THRESHOLD
             && sensor_straight < SENSOR_THRESHOLD

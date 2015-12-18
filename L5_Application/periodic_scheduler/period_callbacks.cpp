@@ -102,40 +102,12 @@ void period_1Hz(void)
     memcpy(&heading_act[1], &heading.GPS_heading_dst, sizeof(float));
     memcpy(&distance, &dest_reached.GPS_dest_reached, sizeof(float));
     printf("Dist %f, Angle %d Dir %d\n ", distance, (int)compass.COMPASS_angle, (int)compass.COMPASS_direction);
+    printf("Lat %f\n, Long %f\n ", latitude_act[0], longitude_act[0]);
 }
 
 void period_100Hz(void)
 {
-
-
-    val.m0.SENSOR_SONARS_rear = back_sensor.SENSOR_BACK_cmd;
-
-    dir = direction_computation(val.m0.SENSOR_SONARS_left,
-                               val.m0.SENSOR_SONARS_middle,
-                               val.m0.SENSOR_SONARS_right,
-                               val.m0.SENSOR_SONARS_rear);
-    /**
-     * bool b = isnearobstacle(val.m0.SENSOR_SONARS_left,
-                               val.m0.SENSOR_SONARS_middle,
-                               val.m0.SENSOR_SONARS_right);
-    if(!b)
-    {
-        dir = fardirection_computation(val.m0.SENSOR_SONARS_left,
-                               val.m0.SENSOR_SONARS_middle,
-                               val.m0.SENSOR_SONARS_right,
-                               val.m0.SENSOR_SONARS_rear,
-                               dir);
-    }
-    **/
-    LD.setNumber(dir);
-    motor_data.MOTOR_CMD_drive = 1;
-
-    motor_data.MOTOR_CMD_steer = dir;
-    motor_data.MOTOR_CMD_angle = compass.COMPASS_angle;
-
-    // HANDLE MIAs:
-    if (SENSOR_TX_SONARS_handle_mia(&val, 10))
-    cnt = 0;
+   cnt = 0;
     while (cnt < 5  &&  CAN_rx(can1, &msg, 0) ) //TODO: what if other message receives before processing prev msg.. it will crash ??
     {
         switch (msg.msg_id)
@@ -164,6 +136,7 @@ void period_100Hz(void)
                 msg.msg_id = hdr.mid;
                 msg.frame_fields.data_len = hdr.dlc;
                 if (turnedon == 1 && isgpsstarted == 1)
+                //if (turnedon == 1)
                 {
                     if (CAN_tx(mycan, &msg, 0))
                     {
@@ -203,7 +176,12 @@ void period_100Hz(void)
                 hdr.dlc = msg.frame_fields.data_len;
                 from = (uint64_t *) &msg.data;
 
-                if (!GPS_TX_GPS_longitude_decode(&longitude, from, &hdr));
+                float a;
+
+                if (!GPS_TX_GPS_longitude_decode(&longitude, from, &hdr))
+                    {
+                       printf("GPS decode fail");
+                    };
                 //printf(" %d %d", hdr.dlc, hdr.mid);
                 break;
 
@@ -233,9 +211,11 @@ void period_100Hz(void)
                 break;
             case 0x02:
                 turnedon = 1;
+               // printf("start - app");
                 break;
             case 0x01:
                 turnedon = 0;
+               // printf("stop - app");
                 break;
 
             default:
@@ -254,6 +234,8 @@ void period_10Hz(void)
     if (SW.getSwitch(1))
     {
         turnedon =1;
+        dest_reached.GPS_dest_reached = 0;
+
 
     }
     else if(SW.getSwitch(2))

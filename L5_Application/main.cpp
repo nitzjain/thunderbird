@@ -30,6 +30,10 @@ This is the android branch
 #include "uart2.hpp"
 #include "utilities.h"
 #include "stdio.h"
+#include "string.h"
+#include "LED.hpp"
+#include "Can.h"
+
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -96,15 +100,53 @@ class bluetooth_task: public scheduler_task
             Uart2& uart2 = Uart2::getInstance();
 
             static char c;
-                while(uart2.getChar(&c,0)) {
-                    //temp_String[i++] = c;
-                    printf("%c",c);
-                }
+            char buf[100];
+            int bufcount = 0;
+            while(uart2.getChar(&c,0)) {
+                         if(c!='*'&& ((c>='a'&&c<='z')||(c>'A'&&c<'Z')))
+                                {
+                                    buf[bufcount++] = c;
+                                }
+                                else if(c=='*')
+                                {
+                                    //uart2putstr("hi\n");
+                                    buf[bufcount++] = '\0';
+                                    char *pch = strstr(buf, "Hello");
+                                    if(pch)
+                                    {
+                                        uart2.printf("\r\nhi1\r\n");
+                                        printf("hi");
+                                        LED::getInstance().toggle(0);
+                                    }
+                                    bufcount = 0;
+                                    memset(buf,'0',100);
+                                }
+                             vTaskDelay(50);
+                            }
 
-            return true;
-        }
+
+
+                        return true;
+                    }
+
 };
+void btinit()
+{
+    Uart2& uart2 = Uart2::getInstance();
 
+      uart2.init(38400,1000,1000);
+
+      delay_ms(1000);
+      uart2putstr("\r\n+STWMOD=0\r\n");
+      uart2putstr("\r\n+STNA=Athavan-st\r\n");
+      uart2putstr("\r\n+STAUTO=0\r\n");
+      uart2putstr("\r\n+STOAUT=1\r\n");
+      uart2putstr("\r\n +STPIN=0000\r\n");
+      delay_ms(2000); // This delay is required.
+      uart2putstr("\r\n+INQ=1\r\n");
+      delay_ms(2000); // This delay is required.
+
+}
 int main(void)
 {
     /**
@@ -118,13 +160,24 @@ int main(void)
      * control codes can be learned by typing the "learn" terminal command.
      */
     //scheduler_add_task(new terminalTask(PRIORITY_HIGH));
-    scheduler_add_task(new bluetooth_task(PRIORITY_CRITICAL));
+    //scheduler_add_task(new bluetooth_task(PRIORITY_CRITICAL));
 
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
     //scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 0
+    //LE.toggle(4);
+        LPC_GPIO2->FIODIR |= (1 << 1);
+               LPC_GPIO2->FIODIR |= (1 << 2);
+
+    btinit();
+    if(!CAN_init(can1, 250, 1024, 1024, NULL,NULL))
+            return false;
+
+        CAN_reset_bus(can1);
+        CAN_bypass_filter_accept_all_msgs();
+
+    #if 1
     scheduler_add_task(new periodicSchedulerTask());
     #endif
 
